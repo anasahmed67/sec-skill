@@ -23,12 +23,6 @@ If you discover a security vulnerability or weakness in SecSkill:
 2. Report via **GitHub Private Vulnerability Reporting** directly on the repository:
    - Navigate to the **Security** tab of the repository on GitHub.
    - Click **Report a vulnerability** to open an advisory draft.
-3. Alternatively, send an encrypted GPG email to:
-   - **`security@secskill.dev`**
-   - Please include:
-     - Target component (CLI, analyzer, script, rule, or agent prompt).
-     - Step-by-step reproduction instructions or a minimal, non-weaponized test case.
-     - Potential threat impact and estimated CVSS severity.
 
 ---
 
