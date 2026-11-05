@@ -277,6 +277,53 @@ export OPENAI_API_KEY="sk-..."
 export ANTHROPIC_API_KEY="sk-ant-..."
 ```
 
+### 🔄 Updating & Keeping Changes in Sync
+
+When SecSkill or its agent skills are modified, do existing users need to reinstall or update? **Yes, in most cases.** Because skills and packages install local copies, updates must be synced to take effect.
+
+#### 1. Updating the Antigravity Skill (`SKILL.md`)
+Because `SKILL.md` is copied into `.gemini/skills/`, any changes to instructions or agent capabilities must be re-copied:
+
+- **macOS / Linux:**
+  ```bash
+  # Project-local:
+  cp secskill/SKILL.md .gemini/skills/secskill/SKILL.md
+  # Global:
+  cp secskill/SKILL.md ~/.gemini/skills/secskill/SKILL.md
+  ```
+
+- **Windows (PowerShell):**
+  ```powershell
+  # Project-local:
+  Copy-Item "secskill\SKILL.md" -Destination ".gemini\skills\secskill\SKILL.md" -Force
+  # Global:
+  Copy-Item "secskill\SKILL.md" -Destination "$env:USERPROFILE\.gemini\skills\secskill\SKILL.md" -Force
+  ```
+
+> 💡 **Tip — Symlink for Live Development Updates:**  
+> If you are actively developing SecSkill or want changes to sync automatically without manual re-copying, create a symbolic link instead of copying:
+> - **macOS / Linux:** `ln -s "$(pwd)/secskill" ~/.gemini/skills/secskill`
+> - **Windows (PowerShell as Admin):** `New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.gemini\skills\secskill" -Target "$PWD\secskill"`
+
+#### 2. Updating the Python Package (`secskill` CLI & Engine)
+- **Installed via pip (PyPI):**
+  ```bash
+  pip install --upgrade secskill
+  ```
+- **Installed directly from Git:**
+  ```bash
+  pip install --upgrade git+https://github.com/your-org/secskill.git
+  ```
+- **Installed from source in editable mode (`pip install -e .`):**
+  - Simply pull the latest changes: `git pull origin main` (code edits in `.py` files take effect immediately).
+  - *Note:* If dependencies or CLI entrypoints in `pyproject.toml` changed, re-run `pip install -e ".[dev]"`.
+
+#### 3. Updating Project Agent Rules & Configs
+If agent prompts or IDE templates (`.cursorrules`, `CLAUDE.md`, `.secskill/`) were modified:
+```bash
+secskill init
+```
+
 ---
 
 ## 🤖 AI Agent Integrations
@@ -468,6 +515,10 @@ Copy-Item "$skillPath\SKILL.md" -Destination "$env:USERPROFILE\.gemini\skills\se
 > *"Show me the attack path graph for this module."*
 
 The skill teaches Antigravity all SecSkill commands, output formats, and security standards — no manual prompting needed.
+
+**Step 5 — Keeping the Skill updated:**
+
+When `secskill/SKILL.md` is modified, re-run the copy command from Step 1 or 2 to update the skill in `.gemini/skills/secskill/SKILL.md`. Alternatively, point a symlink directly to `secskill/` so future updates take effect automatically without re-copying.
 
 </details>
 
