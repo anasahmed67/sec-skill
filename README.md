@@ -864,38 +864,117 @@ cd my-project
 secskill init
 
 # 3. Run your first scan
-secskill scan . --format html
+secskill scan .
 
-# 4. Open the dashboard
-secskill view
+# 4. Explain a finding
+secskill explain --finding F-1001
 
-# 5. Explain a finding
-secskill explain CWE-89-001
+# 5. Preview a fix (dry-run, no file changes)
+secskill fix --finding F-1001 --dry-run
 
-# 6. Generate a fix
-secskill fix CWE-89-001
+# 6. Apply the fix (requires approval for Critical/High)
+secskill fix --finding F-1001
 
-# 7. Watch for secrets in real-time
+# 7. Re-scan to verify resolution
+secskill scan --file path/to/fixed_file.py
+
+# 8. Watch for secrets in real-time
 secskill watch ./src
 ```
 
 ---
 
-## 📊 Visual Reports & Dashboards
+## 🔄 Core Workflow — Scan, Triage & Fix
 
-SecSkill generates rich, interactive HTML dashboards with:
+SecSkill's primary job is a **full-app security scan → vulnerability triage → fix** loop, grounded in OWASP Top 10, MITRE CWE, NIST SSDF, and CVSS-style severity scoring.
 
-- **Severity distribution** — pie chart of CRITICAL / HIGH / MEDIUM / LOW
-- **Finding timeline** — trend across scans
-- **Standard heatmap** — which OWASP / CWE categories are most affected
-- **Filterable findings table** — sort by severity, standard, file, or CWE ID
-- **Inline code viewer** — highlighted vulnerable lines with annotation
+### Step 1 — Scan the Whole App
 
 ```bash
-# Generate and open the HTML dashboard
-secskill scan . --format html --output report.html
-secskill view                  # opens in your default browser
+# Full codebase scan (Python, JS/TS, Java — full support)
+secskill scan .
 
+# With LLM contextual triage (deeper analysis, fewer false positives)
+secskill scan . --llm --provider ollama
+
+# Output as SARIF for GitHub Code Scanning
+secskill scan . --format sarif --output results.sarif
+
+# Output as Markdown report
+secskill scan . --format markdown --output report.md
+
+# Scan only a single file
+secskill scan --file src/api/users.py
+
+# Scan changed files vs a git branch
+secskill scan --diff main
+
+# Include dependency vulnerability check (requires network consent)
+secskill scan . --consent
+```
+
+SecSkill applies rules from `secskill/rules/` (YAML, covering Python, JavaScript, Java, and secrets) and ingests output from external tools (Semgrep, Bandit, ESLint) if they are available in `PATH`.
+
+### Step 2 — Understand a Finding
+
+```bash
+# Full CWE background, attack path, and threat context
+secskill explain --finding F-1001
+
+# Look up by CWE directly
+secskill explain --finding CWE-89
+```
+
+Each finding includes: **CWE / OWASP category**, **CVSS-style severity**, **attack path from source to sink**, **affected lines**, and **recommended fix**.
+
+### Step 3 — Fix Vulnerabilities
+
+```bash
+# Preview the fix as a unified diff — no files changed
+secskill fix --finding F-1001 --dry-run
+
+# Apply the fix (Critical/High prompt for approval before write)
+secskill fix --finding F-1001
+```
+
+> **Human-in-the-Loop:** Critical and High findings always show a diff preview and require your explicit approval before any file is modified.
+
+### Step 4 — Verify (Re-scan)
+
+```bash
+# Re-scan the patched file to confirm resolution and check for regressions
+secskill scan --file src/api/users.py
+
+# Or re-run the full scan
+secskill scan .
+```
+
+### 🤖 Shortcut — Use the Agent Directly
+
+If SecSkill is active as an **agent skill** (Antigravity, Claude Code, Cursor, Copilot), skip the CLI and describe what you want in plain English:
+
+- *"Scan this repo for security issues"*
+- *"Review `src/api/users.py` for injection vulnerabilities"*
+- *"Fix the SQL injection in `app/users.py` line 42"*
+- *"Check my `requirements.txt` for vulnerable dependencies"*
+- *"Review this diff before I commit"*
+
+The agent runs the full 8-stage pipeline internally, maps every finding to CWE/OWASP/SSDF, and waits for your approval on Critical/High fixes before touching any file.
+
+---
+
+## 📊 Output Formats
+
+SecSkill supports multiple output formats to fit any workflow:
+
+| Format | Flag | Best For |
+|--------|------|----------|
+| Console | `--format console` *(default)* | Interactive terminal review |
+| SARIF | `--format sarif` | GitHub Code Scanning / CI pipelines |
+| JSON | `--format json` | Custom tooling and automation |
+| Markdown | `--format markdown` | PR comments, docs, reports |
+
+```bash
 # SARIF output for GitHub Code Scanning
 secskill scan . --format sarif --output results.sarif
 
@@ -903,7 +982,7 @@ secskill scan . --format sarif --output results.sarif
 secskill scan . --format json --output findings.json
 
 # Markdown for PR comments
-secskill scan . --format markdown --output findings.md
+secskill scan . --format markdown --output report.md
 ```
 
 ---
@@ -974,17 +1053,17 @@ The simulator generates **safe, non-destructive proof-of-concept payloads** to v
 ## 🛠️ Remediation & Triage
 
 ```bash
-# Get a human-readable explanation + PoC scenario
-secskill explain CWE-89-001
+# Get a human-readable explanation + attack path for a finding
+secskill explain --finding F-1001
 
-# Auto-generate a remediation patch
-secskill fix CWE-89-001
+# Look up by CWE ID
+secskill explain --finding CWE-89
 
-# Apply the patch interactively
-secskill fix CWE-89-001 --apply
+# Preview a remediation patch (unified diff — no files changed)
+secskill fix --finding F-1001 --dry-run
 
-# Batch fix all HIGH findings
-secskill fix --severity high --apply --dry-run
+# Apply the patch (Critical/High prompt for approval before write)
+secskill fix --finding F-1001
 ```
 
 Each finding comes with:
@@ -1036,7 +1115,6 @@ secskill <command> [options]
 
 Commands:
   scan        Scan files or directories for security vulnerabilities
-  view        Open the latest HTML dashboard in your browser
   graph       Generate and display attack path graphs
   watch       Real-time filesystem monitoring for secrets and leaks
   simulate    Run defensive attack simulations (static, non-destructive)
@@ -1047,14 +1125,23 @@ Commands:
 
 scan options:
   <path>                   File or directory to scan (default: .)
-  --format <fmt>           Output format: sarif|html|json|markdown|console
+  --format <fmt>           Output format: console|sarif|json|markdown (default: console)
   --output <file>          Write output to file (default: stdout / auto-named)
-  --triage                 Enable LLM triage (requires LLM backend)
+  --diff <branch>          Git branch or commit to diff against (e.g. main)
+  --file <path>            Specific single file to audit
+  --llm                    Enable LLM contextual triage
+  --provider <name>        LLM provider: ollama|openai|anthropic (default: ollama)
+  --consent                Allow external network queries for dependency audits (OSV)
+  --scope <scope>          Scan scope: all|changed-files
   --severity <level>       Minimum severity: critical|high|medium|low
   --fail-on <level>        Exit non-zero if findings at this level exist
   --exclude <pattern>      Glob pattern to exclude (repeatable)
   --config <file>          Path to config file (default: .secskill/config.yml)
   --no-cache               Disable result caching
+
+fix options:
+  --finding <id>           Finding ID or CWE to fix (e.g. F-1001 or CWE-89)
+  --dry-run                Preview the unified diff without modifying any files
 
 Global options:
   --llm <backend>          LLM backend: ollama|openai|anthropic (default: ollama)

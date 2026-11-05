@@ -38,6 +38,11 @@ htmlcov/
 reports/
 *.sarif
 *.html
+findings.json
+findings.md
+
+# AI Tool Workspace Config
+.gemini/
 
 # IDEs & System
 .idea/

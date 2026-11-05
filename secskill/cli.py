@@ -14,7 +14,6 @@ from secskill.reporting.console_report import ConsoleReporter
 from secskill.reporting.sarif_report import SarifReporter
 from secskill.reporting.json_report import JsonReporter
 from secskill.reporting.markdown_report import MarkdownReporter
-from secskill.reporting.html_report import HtmlReporter
 
 app = typer.Typer(help="SecSkill - AI-enhanced Security Scanner & Agent Skill")
 console = Console()
@@ -93,7 +92,7 @@ jobs:
 @app.command()
 def scan(
     path: Path = typer.Argument(Path("."), help="Path to target directory or file"),
-    format: str = typer.Option("console", "--format", "-f", help="Output format: console, sarif, json, markdown, html"),
+    format: str = typer.Option("console", "--format", "-f", help="Output format: console, sarif, json, markdown"),
     output: Path = typer.Option(None, "--output", "-o", help="Report output file path"),
     diff: str = typer.Option(None, "--diff", help="Git branch or commit to diff against (e.g. main)"),
     scope: str = typer.Option("all", "--scope", help="Scan scope: all, changed-files"),
@@ -129,10 +128,6 @@ def scan(
             print(content)
     elif format == "markdown":
         content = MarkdownReporter().generate(report, output)
-        if not output:
-            print(content)
-    elif format == "html":
-        content = HtmlReporter().generate(report, output)
         if not output:
             print(content)
     else:
@@ -250,36 +245,6 @@ def simulate(
         return
 
     HackerSimulator.run_simulation(scenario)
-
-@app.command()
-def view(
-    path: Path = typer.Argument(Path("."), help="Path to target directory or file to audit and visualize"),
-    output: Optional[Path] = typer.Option(None, "--output", "-o", help="Custom output path for the HTML dashboard"),
-    open_browser: bool = typer.Option(True, "--open/--no-open", help="Open visual dashboard in default web browser"),
-):
-    """Scan codebase and instantly launch the visual interactive dark-mode Web Dashboard."""
-    import webbrowser
-    import tempfile
-    
-    console.print(f"[bold cyan]🔍 Scanning target for Visual Dashboard:[/bold cyan] {path}")
-    context = build_scan_context(str(path))
-    scanner = SecurityScanner()
-    report = scanner.scan(context)
-
-    html_reporter = HtmlReporter()
-    if output:
-        out_file = Path(output).resolve()
-    else:
-        temp_dir = Path(tempfile.gettempdir()) / "secskill"
-        temp_dir.mkdir(parents=True, exist_ok=True)
-        out_file = temp_dir / f"secskill_dashboard_{report.scan_id[:8]}.html"
-
-    html_reporter.generate(report, out_file)
-    console.print(f"[bold green]✓ Visual Dashboard generated:[/bold green] [cyan]{out_file}[/cyan]")
-
-    if open_browser:
-        console.print("[dim]Opening visual dashboard in your browser...[/dim]")
-        webbrowser.open(out_file.as_uri())
 
 @app.command()
 def graph(

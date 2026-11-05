@@ -1,10 +1,9 @@
-"""Report generators for Console, SARIF, JSON, Markdown, and HTML."""
+"""Report generators for Console, SARIF, JSON, and Markdown."""
 from secskill.reporting.base import BaseReporter
 from secskill.reporting.console_report import ConsoleReporter
 from secskill.reporting.sarif_report import SarifReporter
 from secskill.reporting.json_report import JsonReporter
 from secskill.reporting.markdown_report import MarkdownReporter
-from secskill.reporting.html_report import HtmlReporter
 
 __all__ = [
     "BaseReporter",
@@ -12,5 +11,4 @@ __all__ = [
     "SarifReporter",
     "JsonReporter",
     "MarkdownReporter",
-    "HtmlReporter",
 ]
