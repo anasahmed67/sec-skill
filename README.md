@@ -427,17 +427,30 @@ Antigravity loads skills from `~/.gemini/skills/` (global) or `.gemini/skills/` 
 
 ```bash
 # secskill init does this automatically, or do it manually:
+
+# macOS / Linux
 mkdir -p .gemini/skills/secskill
 cp "$(python -c 'import secskill; import os; print(os.path.dirname(secskill.__file__))')/SKILL.md" \
    .gemini/skills/secskill/SKILL.md
+
+# Windows (PowerShell)
+New-Item -ItemType Directory -Force -Path .gemini\skills\secskill | Out-Null
+$skillPath = python -c "import secskill; import os; print(os.path.dirname(secskill.__file__))"
+Copy-Item "$skillPath\SKILL.md" -Destination ".gemini\skills\secskill\SKILL.md" -Force
 ```
 
 **Step 2 — Or install globally (all projects):**
 
 ```bash
+# macOS / Linux
 mkdir -p ~/.gemini/skills/secskill
 cp "$(python -c 'import secskill; import os; print(os.path.dirname(secskill.__file__))')/SKILL.md" \
    ~/.gemini/skills/secskill/SKILL.md
+
+# Windows (PowerShell)
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.gemini\skills\secskill" | Out-Null
+$skillPath = python -c "import secskill; import os; print(os.path.dirname(secskill.__file__))"
+Copy-Item "$skillPath\SKILL.md" -Destination "$env:USERPROFILE\.gemini\skills\secskill\SKILL.md" -Force
 ```
 
 **Step 3 — Verify Antigravity picks it up:**
