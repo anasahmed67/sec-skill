@@ -1,0 +1,10 @@
+# SecSkill Sample Configuration
+fail_on_severity: HIGH
+llm_provider: ollama
+llm_model: codellama
+llm_cache: true
+ignored_paths:
+  - ".git"
+  - ".venv"
+  - "node_modules"
+  - "dist"

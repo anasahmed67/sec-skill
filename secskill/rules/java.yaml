@@ -1,0 +1,136 @@
+rules:
+  - id: "SEC-089-JAVA-SQLI"
+    title: "SQL Injection via Concatenation in Statement Execution"
+    cwe: "CWE-89"
+    owasp: "A03:2021-Injection"
+    ssdf: "PW.5.1"
+    severity: "CRITICAL"
+    confidence: 0.92
+    languages:
+      - java
+    patterns:
+      - 'createStatement\s*\(\s*\)\s*\.execute(?:Query|Update)\s*\([^)]*\+'
+      - 'connection\.prepareStatement\s*\([^?)]*\+'
+    remediation:
+      description: "Use PreparedStatement with parameter placeholders (?) rather than string concatenation."
+      vulnerable_example: |
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery("SELECT * FROM users WHERE id = " + userId);
+      secure_example: |
+        PreparedStatement ps = conn.prepareStatement("SELECT * FROM users WHERE id = ?");
+        ps.setInt(1, userId);
+        ResultSet rs = ps.executeQuery();
+    references:
+      - "https://cwe.mitre.org/data/definitions/89.html"
+    test_cases:
+      vulnerable:
+        code: |
+          stmt.executeQuery("SELECT * FROM accounts WHERE name = '" + req.getParameter("name") + "'");
+        expected_finding: true
+        expected_cwe: "CWE-89"
+      secure:
+        code: |
+          ps.setString(1, req.getParameter("name"));
+        expected_finding: false
+
+  - id: "SEC-078-JAVA-EXEC"
+    title: "OS Command Injection via Runtime.exec"
+    cwe: "CWE-78"
+    owasp: "A03:2021-Injection"
+    ssdf: "PW.5.1"
+    severity: "CRITICAL"
+    confidence: 0.90
+    languages:
+      - java
+    patterns:
+      - 'Runtime\.getRuntime\s*\(\s*\)\s*\.exec\s*\([^)]*\+'
+    remediation:
+      description: "Use ProcessBuilder with discrete tokenized argument arrays and avoid shell interpreters."
+      vulnerable_example: |
+        Runtime.getRuntime().exec("sh -c 'ping -c 1 " + host + "'");
+      secure_example: |
+        ProcessBuilder pb = new ProcessBuilder("ping", "-c", "1", host);
+        pb.start();
+    references:
+      - "https://cwe.mitre.org/data/definitions/78.html"
+    test_cases:
+      vulnerable:
+        code: |
+          Runtime.getRuntime().exec("cat " + userInput);
+        expected_finding: true
+        expected_cwe: "CWE-78"
+      secure:
+        code: |
+          new ProcessBuilder("cat", userInput).start();
+        expected_finding: false
+
+  - id: "SEC-611-JAVA-XXE"
+    title: "XML External Entity (XXE) Injection"
+    cwe: "CWE-611"
+    owasp: "A05:2021-Security Misconfiguration"
+    ssdf: "PW.5.1"
+    severity: "HIGH"
+    confidence: 0.88
+    languages:
+      - java
+    patterns:
+      - 'DocumentBuilderFactory\.newInstance\s*\(\s*\)'
+    remediation:
+      description: "Explicitly disable DTD declarations and external general/parameter entities before parsing XML."
+      vulnerable_example: |
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        Document doc = db.parse(xmlInput);
+      secure_example: |
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+        dbf.setFeature("http://xml.org/sax/features/external-general-entities", false);
+        dbf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        Document doc = db.parse(xmlInput);
+    references:
+      - "https://cwe.mitre.org/data/definitions/611.html"
+    test_cases:
+      vulnerable:
+        code: |
+          DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+          Document doc = dbf.newDocumentBuilder().parse(input);
+        expected_finding: true
+        expected_cwe: "CWE-611"
+      secure:
+        code: |
+          dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+        expected_finding: false
+
+  - id: "SEC-502-JAVA-DESER"
+    title: "Insecure Deserialization via ObjectInputStream"
+    cwe: "CWE-502"
+    owasp: "A08:2021-Software and Data Integrity Failures"
+    ssdf: "PW.5.1"
+    severity: "CRITICAL"
+    confidence: 0.95
+    languages:
+      - java
+    patterns:
+      - 'new\s+ObjectInputStream\s*\([^)]*\)\.readObject\s*\(\s*\)'
+      - 'ois\.readObject\s*\(\s*\)'
+    remediation:
+      description: "Avoid Java native serialization. Use JSON/Protobuf or implement ObjectInputFilter to restrict allowed classes."
+      vulnerable_example: |
+        ObjectInputStream ois = new ObjectInputStream(rawStream);
+        Object obj = ois.readObject();
+      secure_example: |
+        ObjectMapper mapper = new ObjectMapper();
+        UserDto user = mapper.readValue(rawStream, UserDto.class);
+    references:
+      - "https://cwe.mitre.org/data/definitions/502.html"
+    test_cases:
+      vulnerable:
+        code: |
+          Object obj = new ObjectInputStream(in).readObject();
+        expected_finding: true
+        expected_cwe: "CWE-502"
+      secure:
+        code: |
+          UserDto user = jsonMapper.readValue(in, UserDto.class);
+        expected_finding: false

@@ -1,0 +1,62 @@
+name: "🐛 Bug Report"
+description: "File a bug report or scan error for SecSkill"
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug! Please ensure this report does NOT contain sensitive production code or real credentials. If you are reporting a security vulnerability in SecSkill itself, please consult [SECURITY.md](https://github.com/secskill/secskill/blob/main/SECURITY.md).
+  - type: input
+    id: version
+    attributes:
+      label: "SecSkill Version"
+      description: "Run `secskill version`"
+      placeholder: "e.g., 0.1.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: environment
+    attributes:
+      label: "Execution Context"
+      options:
+        - "CLI (Local Terminal)"
+        - "Claude Code (Agent Skill)"
+        - "Cursor (.cursorrules)"
+        - "Antigravity Agent"
+        - "GitHub Actions CI"
+        - "Other"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: "Describe the Bug"
+      description: "A clear and concise description of what happened."
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: "Minimal Reproduction Code"
+      description: "Provide a minimal code sample that reproduces the issue."
+      placeholder: |
+        ```python
+        # minimal code snippet here
+        ```
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: "Expected Behavior"
+      description: "What did you expect to happen instead?"
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: "Terminal Output / Traceback"
+      description: "Copy and paste terminal logs if applicable."
+      render: shell
+

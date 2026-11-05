@@ -1,0 +1,41 @@
+name: "✨ Feature Request"
+description: "Suggest a new feature, analyzer, language pack, or enhancement"
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        We love community ideas! Please describe the feature you would like to see in SecSkill.
+  - type: textarea
+    id: problem
+    attributes:
+      label: "Problem or Gap"
+      description: "Is your feature request related to a problem or limitation? Please describe."
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: "Proposed Solution"
+      description: "Describe the solution or design you would like to see implemented."
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: "Alternatives Considered"
+      description: "Describe any alternative solutions or features you've considered."
+  - type: dropdown
+    id: target_area
+    attributes:
+      label: "Affected Component"
+      options:
+        - "CLI & Core Pipeline"
+        - "Agent Integration (Claude Code / Cursor / Antigravity)"
+        - "Static Rules & AST"
+        - "Dependency & Secret Scanner"
+        - "SARIF / Reporting"
+        - "Benchmarks / Evals"
+        - "Documentation"
+

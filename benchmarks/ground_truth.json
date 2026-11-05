@@ -1,0 +1,458 @@
+{
+  "vulnerable_samples": {
+    "01_sql_injection.py": {
+      "vulnerable": true,
+      "cwe": "CWE-89",
+      "severity": "CRITICAL",
+      "description": "SQL Injection via string formatting"
+    },
+    "02_command_injection.py": {
+      "vulnerable": true,
+      "cwe": "CWE-78",
+      "severity": "CRITICAL",
+      "description": "OS Command Injection via shell=True"
+    },
+    "03_path_traversal.py": {
+      "vulnerable": true,
+      "cwe": "CWE-22",
+      "severity": "HIGH",
+      "description": "Path traversal without path resolution check"
+    },
+    "04_insecure_deserialization.py": {
+      "vulnerable": true,
+      "cwe": "CWE-502",
+      "severity": "CRITICAL",
+      "description": "Insecure deserialization using pickle"
+    },
+    "05_hardcoded_secret.py": {
+      "vulnerable": true,
+      "cwe": "CWE-798",
+      "severity": "HIGH",
+      "description": "Hardcoded API key token in source code"
+    },
+    "06_ssrf.py": {
+      "vulnerable": true,
+      "cwe": "CWE-918",
+      "severity": "HIGH",
+      "description": "Server-Side Request Forgery via unsanitized URL fetch"
+    },
+    "07_insecure_eval.py": {
+      "vulnerable": true,
+      "cwe": "CWE-95",
+      "severity": "CRITICAL",
+      "description": "Arbitrary code execution via eval"
+    },
+    "08_weak_random.py": {
+      "vulnerable": true,
+      "cwe": "CWE-338",
+      "severity": "MEDIUM",
+      "description": "Predictable PRNG used for security-sensitive token"
+    },
+    "09_reflected_xss.js": {
+      "vulnerable": true,
+      "cwe": "CWE-79",
+      "severity": "HIGH",
+      "description": "Cross-site scripting via unescaped innerHTML"
+    },
+    "10_xxe_injection.py": {
+      "vulnerable": true,
+      "cwe": "CWE-611",
+      "severity": "HIGH",
+      "description": "Improper restriction of XML External Entity Reference"
+    },
+    "11_insecure_tempfile.py": {
+      "vulnerable": true,
+      "cwe": "CWE-377",
+      "severity": "LOW",
+      "description": "Insecure temporary file creation in shared directory"
+    },
+    "12_csrf_vulnerability.py": {
+      "vulnerable": true,
+      "cwe": "CWE-352",
+      "severity": "HIGH",
+      "description": "Cross-Site Request Forgery on state-changing endpoint"
+    },
+    "13_open_redirect.py": {
+      "vulnerable": true,
+      "cwe": "CWE-601",
+      "severity": "MEDIUM",
+      "description": "URL Redirection to untrusted site"
+    },
+    "14_redos.py": {
+      "vulnerable": true,
+      "cwe": "CWE-1333",
+      "severity": "MEDIUM",
+      "description": "Catastrophic polynomial regular expression backtracking"
+    },
+    "15_weak_password_hash.py": {
+      "vulnerable": true,
+      "cwe": "CWE-328",
+      "severity": "HIGH",
+      "description": "Broken/Weak cryptographic hashing algorithm (MD5)"
+    },
+    "16_prototype_pollution.js": {
+      "vulnerable": true,
+      "cwe": "CWE-1321",
+      "severity": "HIGH",
+      "description": "JavaScript Prototype Pollution via unvalidated object keys"
+    },
+    "17_insecure_cors.py": {
+      "vulnerable": true,
+      "cwe": "CWE-942",
+      "severity": "MEDIUM",
+      "description": "Overly permissive Cross-Origin Resource Sharing policy"
+    },
+    "18_unsafe_yaml.py": {
+      "vulnerable": true,
+      "cwe": "CWE-502",
+      "severity": "CRITICAL",
+      "description": "Arbitrary object instantiation via unsafe YAML Loader"
+    },
+    "19_cleartext_http.py": {
+      "vulnerable": true,
+      "cwe": "CWE-319",
+      "severity": "HIGH",
+      "description": "Transmission of sensitive credentials over unencrypted HTTP"
+    },
+    "20_ssti.py": {
+      "vulnerable": true,
+      "cwe": "CWE-1336",
+      "severity": "CRITICAL",
+      "description": "Server-Side Template Injection via string interpolation"
+    },
+    "21_ldap_injection.py": {
+      "vulnerable": true,
+      "cwe": "CWE-90",
+      "severity": "HIGH",
+      "description": "LDAP Injection via unescaped search filter"
+    },
+    "22_hardcoded_jwt_secret.py": {
+      "vulnerable": true,
+      "cwe": "CWE-798",
+      "severity": "HIGH",
+      "description": "Trivial or hardcoded JWT secret key"
+    },
+    "23_race_condition.py": {
+      "vulnerable": true,
+      "cwe": "CWE-367",
+      "severity": "MEDIUM",
+      "description": "Time-of-check Time-of-use (TOCTOU) file race condition"
+    },
+    "24_insecure_cookie.py": {
+      "vulnerable": true,
+      "cwe": "CWE-614",
+      "severity": "MEDIUM",
+      "description": "Cookie missing Secure and HttpOnly flags"
+    },
+    "25_zip_slip.py": {
+      "vulnerable": true,
+      "cwe": "CWE-22",
+      "severity": "CRITICAL",
+      "description": "Zip Slip path traversal during archive extraction"
+    },
+    "26_timing_attack.py": {
+      "vulnerable": true,
+      "cwe": "CWE-208",
+      "severity": "LOW",
+      "description": "Information disclosure via timing discrepancies in string equality"
+    },
+    "27_regex_injection.py": {
+      "vulnerable": true,
+      "cwe": "CWE-624",
+      "severity": "LOW",
+      "description": "Regex injection from untrusted pattern source"
+    },
+    "28_insecure_tls.py": {
+      "vulnerable": true,
+      "cwe": "CWE-295",
+      "severity": "HIGH",
+      "description": "Certificate validation explicitly disabled in SSL context"
+    },
+    "29_insecure_temp_dir.py": {
+      "vulnerable": true,
+      "cwe": "CWE-732",
+      "severity": "MEDIUM",
+      "description": "World-writable directory creation permissions"
+    },
+    "30_missing_auth_check.py": {
+      "vulnerable": true,
+      "cwe": "CWE-285",
+      "severity": "CRITICAL",
+      "description": "Missing authorization check on administrative action"
+    }
+  },
+  "secure_samples": {
+    "01_sql_injection.py": {
+      "vulnerable": false,
+      "cwe": null,
+      "severity": null,
+      "description": "Remediated safe implementation"
+    },
+    "02_command_injection.py": {
+      "vulnerable": false,
+      "cwe": null,
+      "severity": null,
+      "description": "Remediated safe implementation"
+    },
+    "03_path_traversal.py": {
+      "vulnerable": false,
+      "cwe": null,
+      "severity": null,
+      "description": "Remediated safe implementation"
+    },
+    "04_insecure_deserialization.py": {
+      "vulnerable": false,
+      "cwe": null,
+      "severity": null,
+      "description": "Remediated safe implementation"
+    },
+    "05_hardcoded_secret.py": {
+      "vulnerable": false,
+      "cwe": null,
+      "severity": null,
+      "description": "Remediated safe implementation"
+    },
+    "06_ssrf.py": {
+      "vulnerable": false,
+      "cwe": null,
+      "severity": null,
+      "description": "Remediated safe implementation"
+    },
+    "07_insecure_eval.py": {
+      "vulnerable": false,
+      "cwe": null,
+      "severity": null,
+      "description": "Remediated safe implementation"
+    },
+    "08_weak_random.py": {
+      "vulnerable": false,
+      "cwe": null,
+      "severity": null,
+      "description": "Remediated safe implementation"
+    },
+    "09_reflected_xss.js": {
+      "vulnerable": false,
+      "cwe": null,
+      "severity": null,
+      "description": "Remediated safe implementation"
+    },
+    "10_xxe_injection.py": {
+      "vulnerable": false,
+      "cwe": null,
+      "severity": null,
+      "description": "Remediated safe implementation"
+    },
+    "11_insecure_tempfile.py": {
+      "vulnerable": false,
+      "cwe": null,
+      "severity": null,
+      "description": "Remediated safe implementation"
+    },
+    "12_csrf_vulnerability.py": {
+      "vulnerable": false,
+      "cwe": null,
+      "severity": null,
+      "description": "Remediated safe implementation"
+    },
+    "13_open_redirect.py": {
+      "vulnerable": false,
+      "cwe": null,
+      "severity": null,
+      "description": "Remediated safe implementation"
+    },
+    "14_redos.py": {
+      "vulnerable": false,
+      "cwe": null,
+      "severity": null,
+      "description": "Remediated safe implementation"
+    },
+    "15_weak_password_hash.py": {
+      "vulnerable": false,
+      "cwe": null,
+      "severity": null,
+      "description": "Remediated safe implementation"
+    },
+    "16_prototype_pollution.js": {
+      "vulnerable": false,
+      "cwe": null,
+      "severity": null,
+      "description": "Remediated safe implementation"
+    },
+    "17_insecure_cors.py": {
+      "vulnerable": false,
+      "cwe": null,
+      "severity": null,
+      "description": "Remediated safe implementation"
+    },
+    "18_unsafe_yaml.py": {
+      "vulnerable": false,
+      "cwe": null,
+      "severity": null,
+      "description": "Remediated safe implementation"
+    },
+    "19_cleartext_http.py": {
+      "vulnerable": false,
+      "cwe": null,
+      "severity": null,
+      "description": "Remediated safe implementation"
+    },
+    "20_ssti.py": {
+      "vulnerable": false,
+      "cwe": null,
+      "severity": null,
+      "description": "Remediated safe implementation"
+    },
+    "21_ldap_injection.py": {
+      "vulnerable": false,
+      "cwe": null,
+      "severity": null,
+      "description": "Remediated safe implementation"
+    },
+    "22_hardcoded_jwt_secret.py": {
+      "vulnerable": false,
+      "cwe": null,
+      "severity": null,
+      "description": "Remediated safe implementation"
+    },
+    "23_race_condition.py": {
+      "vulnerable": false,
+      "cwe": null,
+      "severity": null,
+      "description": "Remediated safe implementation"
+    },
+    "24_insecure_cookie.py": {
+      "vulnerable": false,
+      "cwe": null,
+      "severity": null,
+      "description": "Remediated safe implementation"
+    },
+    "25_zip_slip.py": {
+      "vulnerable": false,
+      "cwe": null,
+      "severity": null,
+      "description": "Remediated safe implementation"
+    },
+    "26_timing_attack.py": {
+      "vulnerable": false,
+      "cwe": null,
+      "severity": null,
+      "description": "Remediated safe implementation"
+    },
+    "27_regex_injection.py": {
+      "vulnerable": false,
+      "cwe": null,
+      "severity": null,
+      "description": "Remediated safe implementation"
+    },
+    "28_insecure_tls.py": {
+      "vulnerable": false,
+      "cwe": null,
+      "severity": null,
+      "description": "Remediated safe implementation"
+    },
+    "29_insecure_temp_dir.py": {
+      "vulnerable": false,
+      "cwe": null,
+      "severity": null,
+      "description": "Remediated safe implementation"
+    },
+    "30_missing_auth_check.py": {
+      "vulnerable": false,
+      "cwe": null,
+      "severity": null,
+      "description": "Remediated safe implementation"
+    }
+  },
+  "ai_generated_samples": {
+    "ai_01_flawed_sanitizer.py": {
+      "vulnerable": true,
+      "cwe": "CWE-89",
+      "severity": "HIGH",
+      "description": "Inadequate blacklist-based SQL sanitizer produced by LLM"
+    },
+    "ai_02_prompt_injection_sink.py": {
+      "vulnerable": true,
+      "cwe": "CWE-77",
+      "severity": "HIGH",
+      "description": "Direct string interpolation creating direct prompt injection vulnerability"
+    },
+    "ai_03_hallucinated_crypto_cipher.py": {
+      "vulnerable": true,
+      "cwe": "CWE-327",
+      "severity": "HIGH",
+      "description": "Use of insecure ECB mode in AES encryption"
+    },
+    "ai_04_client_side_role_check.js": {
+      "vulnerable": true,
+      "cwe": "CWE-602",
+      "severity": "MEDIUM",
+      "description": "Client-side enforcement of authorization controls"
+    },
+    "ai_05_naive_xss_filter.js": {
+      "vulnerable": true,
+      "cwe": "CWE-79",
+      "severity": "HIGH",
+      "description": "Incomplete script tag regex easily bypassed by <script src=...> or <img> onload"
+    },
+    "ai_06_insecure_jwt_decode.py": {
+      "vulnerable": true,
+      "cwe": "CWE-345",
+      "severity": "HIGH",
+      "description": "JWT claims decoded without signature verification"
+    },
+    "ai_07_incomplete_url_validation.py": {
+      "vulnerable": true,
+      "cwe": "CWE-601",
+      "severity": "MEDIUM",
+      "description": "Flawed redirect validator permitting arbitrary third-party HTTPS URLs"
+    },
+    "ai_08_dangerous_yaml_alias.py": {
+      "vulnerable": true,
+      "cwe": "CWE-502",
+      "severity": "MEDIUM",
+      "description": "YAML FullLoader vulnerable to custom Python tag deserialization"
+    },
+    "ai_09_weak_uuid_token.py": {
+      "vulnerable": true,
+      "cwe": "CWE-330",
+      "severity": "LOW",
+      "description": "UUID1 used for session identifier leaking host MAC and timestamp"
+    },
+    "ai_10_missing_rate_limit.py": {
+      "vulnerable": true,
+      "cwe": "CWE-307",
+      "severity": "MEDIUM",
+      "description": "Login endpoint lacking brute-force throttling or rate limiting"
+    },
+    "ai_11_subtle_timing_leak.py": {
+      "vulnerable": true,
+      "cwe": "CWE-208",
+      "severity": "LOW",
+      "description": "Early-exit loop leaking string comparison timing information"
+    },
+    "ai_12_flawed_regex_boundary.py": {
+      "vulnerable": true,
+      "cwe": "CWE-20",
+      "severity": "MEDIUM",
+      "description": "Regex lacking anchors allowing trailing malicious commands"
+    },
+    "ai_13_insecure_default_permissions.py": {
+      "vulnerable": true,
+      "cwe": "CWE-732",
+      "severity": "LOW",
+      "description": "Secret file created with default world-readable permissions"
+    },
+    "ai_14_mock_verification_left_in_prod.py": {
+      "vulnerable": true,
+      "cwe": "CWE-287",
+      "severity": "CRITICAL",
+      "description": "Hardcoded backdoor/debug bypass in MFA check"
+    },
+    "ai_15_improper_error_handling_leak.py": {
+      "vulnerable": true,
+      "cwe": "CWE-209",
+      "severity": "LOW",
+      "description": "Detailed internal database error and query disclosure"
+    }
+  }
+}

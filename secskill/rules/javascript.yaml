@@ -1,0 +1,160 @@
+rules:
+  - id: "SEC-079-EXPRESS-XSS"
+    title: "Cross-Site Scripting (XSS) via Unescaped Express Response"
+    cwe: "CWE-79"
+    owasp: "A03:2021-Injection"
+    ssdf: "PW.5.1"
+    severity: "HIGH"
+    confidence: 0.90
+    languages:
+      - javascript
+      - typescript
+    patterns:
+      - "res\\.send\\s*\\(\\s*`[^`]*\\$\\{[^}]*req\\."
+      - "res\\.write\\s*\\(\\s*`[^`]*\\$\\{[^}]*req\\."
+      - "res\\.send\\s*\\([^)]*\\+\\s*req\\."
+    remediation:
+      description: "Escape HTML entities before writing user input to HTTP responses, or use an auto-escaping template engine."
+      vulnerable_example: |
+        res.send(`<h1>Hello, ${req.query.name}</h1>`)
+      secure_example: |
+        res.render('hello', { name: req.query.name })
+    references:
+      - "https://cwe.mitre.org/data/definitions/79.html"
+    test_cases:
+      vulnerable:
+        code: |
+          app.get('/greet', (req, res) => { res.send(`<div>${req.query.user}</div>`); });
+        expected_finding: true
+        expected_cwe: "CWE-79"
+      secure:
+        code: |
+          app.get('/greet', (req, res) => { res.json({ user: req.query.user }); });
+        expected_finding: false
+
+  - id: "SEC-079-REACT-DANGEROUS-HTML"
+    title: "XSS via React dangerouslySetInnerHTML"
+    cwe: "CWE-79"
+    owasp: "A03:2021-Injection"
+    ssdf: "PW.5.1"
+    severity: "HIGH"
+    confidence: 0.92
+    languages:
+      - javascript
+      - typescript
+    patterns:
+      - "dangerouslySetInnerHTML\\s*=\\s*\\{\\{\\s*__html:"
+    remediation:
+      description: "Rely on standard JSX auto-escaping ({text}) or sanitize HTML strings with DOMPurify."
+      vulnerable_example: |
+        <div dangerouslySetInnerHTML={{ __html: userBio }} />
+      secure_example: |
+        <div>{userBio}</div>
+    references:
+      - "https://cwe.mitre.org/data/definitions/79.html"
+    test_cases:
+      vulnerable:
+        code: |
+          return <div dangerouslySetInnerHTML={{ __html: post.content }} />;
+        expected_finding: true
+        expected_cwe: "CWE-79"
+      secure:
+        code: |
+          return <div>{post.content}</div>;
+        expected_finding: false
+
+  - id: "SEC-078-NODE-EXEC"
+    title: "OS Command Injection via child_process.exec"
+    cwe: "CWE-78"
+    owasp: "A03:2021-Injection"
+    ssdf: "PW.5.1"
+    severity: "CRITICAL"
+    confidence: 0.92
+    languages:
+      - javascript
+      - typescript
+    patterns:
+      - "(?:exec|execSync)\\s*\\(\\s*`[^`]*\\$\\{"
+      - "(?:exec|execSync)\\s*\\([^)]*\\+\\s*req\\."
+    remediation:
+      description: "Use child_process.execFile or spawn with argument arrays without invoking a shell."
+      vulnerable_example: |
+        exec(`convert ${req.body.file} out.png`, cb);
+      secure_example: |
+        execFile('convert', [req.body.file, 'out.png'], cb);
+    references:
+      - "https://cwe.mitre.org/data/definitions/78.html"
+    test_cases:
+      vulnerable:
+        code: |
+          exec(`ls -la ${req.query.dir}`, callback);
+        expected_finding: true
+        expected_cwe: "CWE-78"
+      secure:
+        code: |
+          execFile('ls', ['-la', req.query.dir], callback);
+        expected_finding: false
+
+  - id: "SEC-287-INSECURE-JWT-DECODE"
+    title: "Insecure JWT Token Decoding Without Cryptographic Verification"
+    cwe: "CWE-287"
+    owasp: "A07:2021-Identification and Authentication Failures"
+    ssdf: "PW.5.1"
+    severity: "HIGH"
+    confidence: 0.90
+    languages:
+      - javascript
+      - typescript
+    patterns:
+      - "jwt\\.decode\\s*\\([^\\n)]+\\)"
+    remediation:
+      description: "Always verify token signatures using jwt.verify() with an explicitly specified algorithm list."
+      vulnerable_example: |
+        const user = jwt.decode(token);
+      secure_example: |
+        const user = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
+    references:
+      - "https://cwe.mitre.org/data/definitions/287.html"
+    test_cases:
+      vulnerable:
+        code: |
+          const claims = jwt.decode(authHeader);
+        expected_finding: true
+        expected_cwe: "CWE-287"
+      secure:
+        code: |
+          const claims = jwt.verify(authHeader, SECRET_KEY);
+        expected_finding: false
+
+  - id: "SEC-1321-PROTOTYPE-POLLUTION"
+    title: "Prototype Pollution via Object Prototype Assignment"
+    cwe: "CWE-1321"
+    owasp: "A08:2021-Software and Data Integrity Failures"
+    ssdf: "PW.5.1"
+    severity: "HIGH"
+    confidence: 0.88
+    languages:
+      - javascript
+      - typescript
+    patterns:
+      - "\\[\\s*[\"']__proto__[\"']\\s*\\]"
+      - "\\[\\s*[\"']constructor[\"']\\s*\\]\\s*\\[\\s*[\"']prototype[\"']\\s*\\]"
+    remediation:
+      description: "Disallow __proto__ and constructor keys when recursively merging or assigning user objects."
+      vulnerable_example: |
+        target["__proto__"][key] = val;
+      secure_example: |
+        if (key === '__proto__' || key === 'constructor') return;
+        target[key] = val;
+    references:
+      - "https://cwe.mitre.org/data/definitions/1321.html"
+    test_cases:
+      vulnerable:
+        code: |
+          obj["__proto__"]["isAdmin"] = true;
+        expected_finding: true
+        expected_cwe: "CWE-1321"
+      secure:
+        code: |
+          Object.assign(cleanObj, safeProps);
+        expected_finding: false

@@ -1,0 +1,12 @@
+rules:
+  - id: OWASP-A01-BROKEN-ACCESS
+    name: Broken Access Control
+    severity: HIGH
+    cwe: CWE-284
+    description: Missing authorization checks or insecure direct object references.
+
+  - id: OWASP-A03-INJECTION
+    name: Injection Flaws
+    severity: CRITICAL
+    cwe: CWE-89
+    description: SQL, Command, or NoSQL injection vulnerabilities.

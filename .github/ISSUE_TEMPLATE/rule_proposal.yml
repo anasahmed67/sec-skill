@@ -1,0 +1,70 @@
+name: "🛡️ New Security Rule Proposal"
+description: "Propose a new static rule or vulnerability pattern"
+title: "[Rule]: "
+labels: ["rules", "security"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please refer to [references/rule-authoring.md](https://github.com/secskill/secskill/blob/main/secskill/references/rule-authoring.md) before proposing a new security rule.
+  - type: input
+    id: rule_id
+    attributes:
+      label: "Rule ID"
+      placeholder: "e.g., SEC-089-SQLI"
+    validations:
+      required: true
+  - type: input
+    id: cwe
+    attributes:
+      label: "MITRE CWE"
+      placeholder: "e.g., CWE-89"
+    validations:
+      required: true
+  - type: input
+    id: owasp
+    attributes:
+      label: "OWASP Top 10 (2021) Category"
+      placeholder: "e.g., A03:2021-Injection"
+    validations:
+      required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: "Estimated Severity"
+      options:
+        - "CRITICAL"
+        - "HIGH"
+        - "MEDIUM"
+        - "LOW"
+        - "INFORMATIONAL"
+    validations:
+      required: true
+  - type: textarea
+    id: vulnerable_example
+    attributes:
+      label: "Vulnerable Code Sample (Triggers Rule)"
+      placeholder: |
+        ```python
+        cursor.execute(f"SELECT * FROM users WHERE id = {user_id}")
+        ```
+    validations:
+      required: true
+  - type: textarea
+    id: secure_example
+    attributes:
+      label: "Secure Control Sample (Must NOT Trigger Rule)"
+      placeholder: |
+        ```python
+        cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+        ```
+    validations:
+      required: true
+  - type: textarea
+    id: regex_pattern
+    attributes:
+      label: "Proposed Detection Pattern (Regex or AST)"
+      placeholder: 'cursor\.execute\s*\(\s*f["\']'
+    validations:
+      required: true
+

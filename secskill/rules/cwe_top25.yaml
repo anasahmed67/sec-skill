@@ -1,0 +1,16 @@
+rules:
+  - id: CWE-787
+    name: Out-of-bounds Write
+    severity: CRITICAL
+  - id: CWE-79
+    name: Improper Neutralization of Input During Web Page Generation (XSS)
+    severity: HIGH
+  - id: CWE-89
+    name: SQL Injection
+    severity: CRITICAL
+  - id: CWE-20
+    name: Improper Input Validation
+    severity: MEDIUM
+  - id: CWE-78
+    name: OS Command Injection
+    severity: CRITICAL

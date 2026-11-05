@@ -1,0 +1,325 @@
+rules:
+  - id: "SEC-089-SQLI"
+    title: "SQL Injection via String Formatting or Concatenation"
+    cwe: "CWE-89"
+    owasp: "A03:2021-Injection"
+    ssdf: "PW.5.1"
+    severity: "CRITICAL"
+    confidence: 0.92
+    languages:
+      - python
+    patterns:
+      - "cursor\\.execute\\s*\\(\\s*f[\"']"
+      - "cursor\\.execute\\s*\\([^\\n)]*\\%"
+      - "cursor\\.execute\\s*\\([^\\n)]*\\.format\\("
+      - "cursor\\.execute\\s*\\([^\\n)]*\\+\\s*[a-zA-Z_]"
+      - "session\\.execute\\s*\\(\\s*f[\"']"
+    dataflow:
+      sources:
+        - "request.args"
+        - "request.form"
+        - "request.json"
+        - "request.GET"
+        - "request.POST"
+      sinks:
+        - "cursor.execute"
+        - "connection.execute"
+        - "session.execute"
+    remediation:
+      description: "Use parameterized queries with bound placeholders (e.g. %s or ?) provided by the database driver."
+      vulnerable_example: |
+        cursor.execute(f"SELECT * FROM users WHERE id = {user_id}")
+      secure_example: |
+        cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+    references:
+      - "https://cwe.mitre.org/data/definitions/89.html"
+      - "https://owasp.org/Top10/A03_2021-Injection/"
+    test_cases:
+      vulnerable:
+        code: |
+          user_id = request.args.get("id")
+          cursor.execute(f"SELECT * FROM users WHERE id = {user_id}")
+        expected_finding: true
+        expected_cwe: "CWE-89"
+      secure:
+        code: |
+          user_id = request.args.get("id")
+          cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+        expected_finding: false
+
+  - id: "SEC-078-CMDI"
+    title: "OS Command Injection via Subprocess shell=True"
+    cwe: "CWE-78"
+    owasp: "A03:2021-Injection"
+    ssdf: "PW.5.1"
+    severity: "CRITICAL"
+    confidence: 0.90
+    languages:
+      - python
+    patterns:
+      - "subprocess\\.(?:run|call|check_call|check_output|Popen)\\s*\\([^)]*shell\\s*=\\s*True"
+      - "os\\.system\\s*\\("
+      - "os\\.popen\\s*\\("
+    dataflow:
+      sources:
+        - "request.args"
+        - "request.form"
+        - "sys.argv"
+      sinks:
+        - "subprocess.run"
+        - "os.system"
+    remediation:
+      description: "Pass commands as argument lists with shell=False (the default) to prevent subshell metacharacter injection."
+      vulnerable_example: |
+        subprocess.run(f"ping -c 1 {host}", shell=True)
+      secure_example: |
+        subprocess.run(["ping", "-c", "1", host], shell=False, check=True)
+    references:
+      - "https://cwe.mitre.org/data/definitions/78.html"
+    test_cases:
+      vulnerable:
+        code: |
+          subprocess.run(f"cat {filename}", shell=True)
+        expected_finding: true
+        expected_cwe: "CWE-78"
+      secure:
+        code: |
+          subprocess.run(["cat", filename], shell=False)
+        expected_finding: false
+
+  - id: "SEC-094-CODEI"
+    title: "Arbitrary Code Execution via eval/exec"
+    cwe: "CWE-94"
+    owasp: "A03:2021-Injection"
+    ssdf: "PW.5.1"
+    severity: "CRITICAL"
+    confidence: 0.95
+    languages:
+      - python
+    patterns:
+      - "(?<![\\w\\.])eval\\s*\\([^\\n)]+"
+      - "(?<![\\w\\.])exec\\s*\\([^\\n)]+"
+    remediation:
+      description: "Avoid dynamic code evaluation. Use ast.literal_eval for safe literal parsing or json.loads for data."
+      vulnerable_example: |
+        result = eval(user_expression)
+      secure_example: |
+        import ast
+        result = ast.literal_eval(user_literal)
+    references:
+      - "https://cwe.mitre.org/data/definitions/94.html"
+    test_cases:
+      vulnerable:
+        code: |
+          val = eval(request.args.get("expr"))
+        expected_finding: true
+        expected_cwe: "CWE-94"
+      secure:
+        code: |
+          val = int(request.args.get("expr"))
+        expected_finding: false
+
+  - id: "SEC-022-PATH-TRAVERSAL"
+    title: "Path Traversal via Unvalidated File Path"
+    cwe: "CWE-22"
+    owasp: "A01:2021-Broken Access Control"
+    ssdf: "PW.5.1"
+    severity: "HIGH"
+    confidence: 0.88
+    languages:
+      - python
+    patterns:
+      - "open\\s*\\(\\s*os\\.path\\.join\\s*\\([^\\n)]*request\\."
+      - "send_file\\s*\\([^\\n)]*request\\."
+      - "open\\s*\\(\\s*f[\"'][^'\"]*\\{[^\\}]*(?:file|path|name)"
+    dataflow:
+      sources:
+        - "request.args"
+        - "request.form"
+      sinks:
+        - "open"
+        - "send_file"
+    remediation:
+      description: "Canonicalize paths using os.path.abspath and assert that the target starts with the base directory."
+      vulnerable_example: |
+        path = os.path.join(UPLOAD_DIR, filename)
+        return open(path, "rb").read()
+      secure_example: |
+        safe_path = os.path.abspath(os.path.join(UPLOAD_DIR, os.path.basename(filename)))
+        if not safe_path.startswith(os.path.abspath(UPLOAD_DIR) + os.sep):
+            raise PermissionError("Path traversal attempt")
+        return open(safe_path, "rb").read()
+    references:
+      - "https://cwe.mitre.org/data/definitions/22.html"
+    test_cases:
+      vulnerable:
+        code: |
+          f = open(os.path.join("/uploads", request.args.get("filename")))
+        expected_finding: true
+        expected_cwe: "CWE-22"
+      secure:
+        code: |
+          clean = os.path.basename(request.args.get("filename"))
+          f = open(os.path.join("/uploads", clean))
+        expected_finding: false
+
+  - id: "SEC-502-DESER"
+    title: "Insecure Deserialization via pickle or Unsafe YAML"
+    cwe: "CWE-502"
+    owasp: "A08:2021-Software and Data Integrity Failures"
+    ssdf: "PW.5.1"
+    severity: "CRITICAL"
+    confidence: 0.95
+    languages:
+      - python
+    patterns:
+      - "pickle\\.loads?\\s*\\("
+      - "_pickle\\.loads?\\s*\\("
+      - "yaml\\.load\\s*\\([^)]*Loader\\s*=\\s*(?:yaml\\.)?(?:Loader|CLoader|UnsafeLoader)"
+    remediation:
+      description: "Never deserialize untrusted payloads with pickle. Use json.loads or yaml.safe_load."
+      vulnerable_example: |
+        obj = pickle.loads(request.data)
+      secure_example: |
+        import json
+        obj = json.loads(request.data)
+    references:
+      - "https://cwe.mitre.org/data/definitions/502.html"
+    test_cases:
+      vulnerable:
+        code: |
+          obj = pickle.loads(payload)
+        expected_finding: true
+        expected_cwe: "CWE-502"
+      secure:
+        code: |
+          obj = json.loads(payload)
+        expected_finding: false
+
+  - id: "SEC-327-WEAK-HASH"
+    title: "Use of Weak Cryptographic Hash (MD5 / SHA1)"
+    cwe: "CWE-327"
+    owasp: "A02:2021-Cryptographic Failures"
+    ssdf: "PW.5.1"
+    severity: "MEDIUM"
+    confidence: 0.85
+    languages:
+      - python
+    patterns:
+      - "hashlib\\.md5\\s*\\("
+      - "hashlib\\.sha1\\s*\\("
+    remediation:
+      description: "Use SHA-256 or SHA-512 for cryptographic integrity, or bcrypt/Argon2 for passwords."
+      vulnerable_example: |
+        token = hashlib.md5(user_id.encode()).hexdigest()
+      secure_example: |
+        token = hashlib.sha256(user_id.encode()).hexdigest()
+    references:
+      - "https://cwe.mitre.org/data/definitions/327.html"
+    test_cases:
+      vulnerable:
+        code: |
+          h = hashlib.md5(b"password").hexdigest()
+        expected_finding: true
+        expected_cwe: "CWE-327"
+      secure:
+        code: |
+          h = hashlib.sha256(b"password").hexdigest()
+        expected_finding: false
+
+  - id: "SEC-330-WEAK-RANDOM"
+    title: "Insecure Randomness for Security Tokens"
+    cwe: "CWE-330"
+    owasp: "A02:2021-Cryptographic Failures"
+    ssdf: "PW.5.1"
+    severity: "MEDIUM"
+    confidence: 0.85
+    languages:
+      - python
+    patterns:
+      - "random\\.(?:randint|random|choice|randrange)\\s*\\("
+    remediation:
+      description: "Use Python's secrets module (CSPRNG) for password reset tokens, session IDs, and API keys."
+      vulnerable_example: |
+        token = str(random.randint(100000, 999999))
+      secure_example: |
+        import secrets
+        token = secrets.token_urlsafe(32)
+    references:
+      - "https://cwe.mitre.org/data/definitions/330.html"
+    test_cases:
+      vulnerable:
+        code: |
+          reset_token = random.randint(100000, 999999)
+        expected_finding: true
+        expected_cwe: "CWE-330"
+      secure:
+        code: |
+          reset_token = secrets.token_hex(16)
+        expected_finding: false
+
+  - id: "SEC-918-SSRF"
+    title: "Server-Side Request Forgery (SSRF) via requests.get"
+    cwe: "CWE-918"
+    owasp: "A10:2021-Server-Side Request Forgery"
+    ssdf: "PW.5.1"
+    severity: "HIGH"
+    confidence: 0.88
+    languages:
+      - python
+    patterns:
+      - "requests\\.(?:get|post|put|delete)\\s*\\(\\s*request\\."
+      - "httpx\\.(?:get|post|put|delete)\\s*\\(\\s*request\\."
+      - "urllib\\.request\\.urlopen\\s*\\(\\s*request\\."
+    remediation:
+      description: "Validate destination URLs against an explicit allowlist and block private/link-local IP addresses."
+      vulnerable_example: |
+        resp = requests.get(request.args.get("url"))
+      secure_example: |
+        target = request.args.get("url")
+        if not is_safe_external_url(target):
+            raise ValueError("Forbidden destination")
+        resp = requests.get(target)
+    references:
+      - "https://cwe.mitre.org/data/definitions/918.html"
+    test_cases:
+      vulnerable:
+        code: |
+          r = requests.get(request.args.get("target_url"))
+        expected_finding: true
+        expected_cwe: "CWE-918"
+      secure:
+        code: |
+          r = requests.get("https://api.verified-service.com/data")
+        expected_finding: false
+
+  - id: "SEC-074-AI-PROMPT-INJECTION"
+    title: "Direct Untrusted Input into AI System Prompt"
+    cwe: "CWE-74"
+    owasp: "A04:2021-Insecure Design"
+    ssdf: "PO.1.2"
+    severity: "HIGH"
+    confidence: 0.85
+    languages:
+      - python
+    patterns:
+      - "f[\"'].*(?:system|prompt).*\\{[^\\}]*(?:user_input|comment|readme|untrusted)"
+      - "prompt\\s*=\\s*f[\"'][^\"']*\\{[^\\}]*request\\."
+    remediation:
+      description: "Isolate user input inside delimited tags (e.g. <user_data>) and never format user input directly into system instructions."
+      vulnerable_example: |
+        prompt = f"You are a helpful assistant. User message: {user_input}"
+      secure_example: |
+        prompt = f"You are a helpful assistant.\n<user_input>\n{sanitize(user_input)}\n</user_input>"
+    references:
+      - "https://cwe.mitre.org/data/definitions/74.html"
+    test_cases:
+      vulnerable:
+        code: |
+          prompt = f"System: execute instruction: {request.args.get('task')}"
+        expected_finding: true
+        expected_cwe: "CWE-74"
+      secure:
+        code: |
+          messages = [{"role": "system", "content": "Assistant"}, {"role": "user", "content": clean_task}]
+        expected_finding: false
