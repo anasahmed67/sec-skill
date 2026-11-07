@@ -187,7 +187,8 @@ When interacting with the developer, support both natural language requests and 
 - `secskill scan .` -> Full repository security audit
 - `secskill scan --diff <branch>` -> Audit changed files against base branch
 - `secskill scan --file <path>` -> Single-file focused security review
-- `secskill scan --scope changed-files` -> Review staged / unstaged git changes
+- `secskill scan-url <url>` -> Full DAST audit of live websites & APIs (TLS, headers, CORS, cookies, exposures)
+- `secskill mcp` -> Start Model Context Protocol (MCP) stdio server for Claude Code, Cursor, Codex, Windsurf
 - `secskill explain --finding <id>` -> Provide detailed CWE background, attack simulation, and threat context
 - `secskill fix --finding <id> --dry-run` -> Show proposed remediation diff without modifying files
 - `secskill duel <file|scenario>` -> Autonomous AI Red Team vs. Blue Team duel arena until code is impenetrable
@@ -195,7 +196,7 @@ When interacting with the developer, support both natural language requests and 
 - `secskill audit-agent .` -> Audit AI Agents, MCP server configs, and Prompt architectures for OWASP LLM / MITRE ATLAS risks
 - `secskill audit-agent . --format html --open` -> Generate interactive Cyberpunk HTML agent audit dashboard
 - `secskill scan --format sarif --output secskill.sarif` -> Export SARIF for GitHub Code Scanning
-- `secskill init` -> Create `.secskill/AGENT.md`, `rules.md`, and CI workflow in the current project
+- `secskill init --agent all` -> Setup SecSkill across Antigravity, Claude Code, Cursor, and Codex with CI workflow
 
 Always remain transparent about tool coverage, never guess on unverified issues, and keep developer productivity and security posture at the core of every report.
 

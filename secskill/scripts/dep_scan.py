@@ -92,30 +92,48 @@ def is_version_vulnerable(installed: str, max_affected: str) -> bool:
     except Exception:
         return False
 
-def parse_requirements_txt(path: Path) -> List[Dict[str, str]]:
+def parse_requirements_txt(path: Path) -> List[Dict[str, Any]]:
     packages = []
     try:
         with open(path, "r", encoding="utf-8", errors="ignore") as f:
-            for line in f:
+            for line_idx, line in enumerate(f, 1):
                 line = line.strip().split("#")[0].strip()
                 if not line or line.startswith("-"):
                     continue
                 m = re.match(r"^([a-zA-Z0-9_\-\.]+)\s*(?:==|>=|<=|~=)\s*([0-9a-zA-Z_\-\.]+)", line)
                 if m:
-                    packages.append({"name": m.group(1).lower(), "version": m.group(2), "ecosystem": "pypi", "file": str(path)})
+                    packages.append({
+                        "name": m.group(1).lower(),
+                        "version": m.group(2),
+                        "ecosystem": "pypi",
+                        "file": str(path),
+                        "line": line_idx,
+                    })
     except Exception:
         pass
     return packages
 
-def parse_package_json(path: Path) -> List[Dict[str, str]]:
+def parse_package_json(path: Path) -> List[Dict[str, Any]]:
     packages = []
     try:
-        with open(path, "r", encoding="utf-8", errors="ignore") as f:
-            data = json.load(f)
-            deps = {**data.get("dependencies", {}), **data.get("devDependencies", {})}
-            for name, ver in deps.items():
-                clean_ver = ver.lstrip("^~>=<")
-                packages.append({"name": name.lower(), "version": clean_ver, "ecosystem": "npm", "file": str(path)})
+        content = path.read_text(encoding="utf-8", errors="ignore")
+        data = json.loads(content)
+        lines = content.splitlines()
+        deps = {**data.get("dependencies", {}), **data.get("devDependencies", {})}
+        for name, ver in deps.items():
+            clean_ver = ver.lstrip("^~>=<")
+            line_idx = 1
+            for idx, l in enumerate(lines, 1):
+                if f'"{name}"' in l:
+                    line_idx = idx
+                    break
+            packages.append({
+                "name": name.lower(),
+                "version": clean_ver,
+                "ecosystem": "npm",
+                "file": str(path),
+                "line": line_idx,
+            })
     except Exception:
         pass
     return packages
@@ -162,7 +180,7 @@ def audit_packages(packages: List[Dict[str, str]], allow_network: bool = False) 
                         "severity": vuln["severity"],
                         "confidence": 0.95,
                         "file": file_path,
-                        "line": 1,
+                        "line": pkg.get("line", 1),
                         "source": "dependency_audit",
                         "tool": "secskill_dep_scan",
                         "evidence": f"Installed {name}=={ver} is vulnerable to {vuln['cve']} ({vuln['title']}). Fixed in {vuln['fixed']}.",
@@ -191,7 +209,7 @@ def audit_packages(packages: List[Dict[str, str]], allow_network: bool = False) 
                     "severity": "high",
                     "confidence": 0.90,
                     "file": file_path,
-                    "line": 1,
+                    "line": pkg.get("line", 1),
                     "source": "dependency_audit",
                     "tool": "osv_api",
                     "evidence": f"OSV advisory {cve_id} detected for {name}=={ver}: {summary}",

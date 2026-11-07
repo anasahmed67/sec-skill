@@ -31,6 +31,15 @@ class SecurityScanner:
         validated_findings = self.filter.apply(raw_findings, context)
         validated_findings = self.reachability.validate(validated_findings, context)
 
+        # 3. LLM Contextual Triage (if enabled)
+        if self.enable_llm:
+            try:
+                from secskill.llm.reviewer import ContextualReviewer
+                reviewer = ContextualReviewer(provider_name=self.provider_name)
+                validated_findings = reviewer.triage_findings(validated_findings, context)
+            except Exception:
+                pass
+
         # Summary counts
         summary = {sev.value: 0 for sev in Severity}
         for f in validated_findings:

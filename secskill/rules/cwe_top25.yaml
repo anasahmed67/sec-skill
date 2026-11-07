@@ -1,16 +1,344 @@
 rules:
-  - id: CWE-787
-    name: Out-of-bounds Write
-    severity: CRITICAL
-  - id: CWE-79
-    name: Improper Neutralization of Input During Web Page Generation (XSS)
-    severity: HIGH
-  - id: CWE-89
-    name: SQL Injection
-    severity: CRITICAL
-  - id: CWE-20
-    name: Improper Input Validation
-    severity: MEDIUM
-  - id: CWE-78
-    name: OS Command Injection
-    severity: CRITICAL
+  - id: "CWE-787"
+    title: "Out-of-bounds Write / Memory Buffer Corruption"
+    name: "Out-of-bounds Write"
+    cwe: "CWE-787"
+    owasp: "A03:2021-Injection"
+    severity: "CRITICAL"
+    confidence: 0.90
+    patterns:
+      - "\\b(?:strcpy|strcat|sprintf|vsprintf|gets)\\s*\\("
+      - "\\bmemcpy\\s*\\([^,]+,\\s*[^,]+,\\s*strlen\\("
+    remediation:
+      description: "Use bounded, safe string operations such as strncpy, snprintf, or std::string in C++, and validate array boundary offsets."
+
+  - id: "CWE-79"
+    title: "Improper Neutralization of Input During Web Page Generation (XSS)"
+    name: "Cross-Site Scripting (XSS)"
+    cwe: "CWE-79"
+    owasp: "A03:2021-Injection"
+    severity: "HIGH"
+    confidence: 0.90
+    patterns:
+      - "innerHTML\\s*="
+      - "document\\.write\\s*\\("
+      - "dangerouslySetInnerHTML"
+      - "v-html"
+      - "res\\.send\\s*\\(\\s*`[^`]*\\$\\{"
+    remediation:
+      description: "Use auto-escaping template engines, encode HTML entities, or sanitize rich HTML using DOMPurify."
+
+  - id: "CWE-89"
+    title: "Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+    name: "SQL Injection"
+    cwe: "CWE-89"
+    owasp: "A03:2021-Injection"
+    severity: "CRITICAL"
+    confidence: 0.92
+    patterns:
+      - "cursor\\.execute\\s*\\(\\s*f[\"']"
+      - "cursor\\.execute\\s*\\([^)]*\\%"
+      - "cursor\\.execute\\s*\\([^)]*\\.format\\("
+      - "SELECT\\s+.*?FROM\\s+.*?WHERE.*?\\+\\s*[a-zA-Z_]"
+    remediation:
+      description: "Use parameterized queries with bound placeholders (? or %s) provided by database drivers or ORMs."
+
+  - id: "CWE-20"
+    title: "Improper Input Validation"
+    name: "Improper Input Validation"
+    cwe: "CWE-20"
+    owasp: "A03:2021-Injection"
+    severity: "MEDIUM"
+    confidence: 0.85
+    patterns:
+      - "request\\.args\\.get\\([^)]*\\)(?!.*?validate)"
+      - "req\\.query\\[[^]]*\\](?!.*?is(?:Email|Alphanumeric|UUID))"
+      - "re\\.compile\\s*\\(\\s*(?:request|req\\.|params)"
+    remediation:
+      description: "Validate all untrusted input against strict schemas (Pydantic, Zod, Joi) using positive allowlists."
+
+  - id: "CWE-78"
+    title: "Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+    name: "OS Command Injection"
+    cwe: "CWE-78"
+    owasp: "A03:2021-Injection"
+    severity: "CRITICAL"
+    confidence: 0.92
+    patterns:
+      - "subprocess\\.(?:run|call|Popen)\\s*\\([^)]*shell\\s*=\\s*True"
+      - "os\\.system\\s*\\("
+      - "os\\.popen\\s*\\("
+      - "child_process\\.(?:exec|execSync)\\s*\\("
+      - "Runtime\\.getRuntime\\(\\)\\.exec\\s*\\("
+    remediation:
+      description: "Avoid executing system shells. Use structured argument lists with shell=False or child_process.execFile."
+
+  - id: "CWE-416"
+    title: "Use After Free"
+    name: "Use After Free"
+    cwe: "CWE-416"
+    owasp: "A08:2021-Software and Data Integrity Failures"
+    severity: "HIGH"
+    confidence: 0.85
+    patterns:
+      - "free\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\);[\\s\\S]{1,50}\\1"
+    remediation:
+      description: "Set freed pointers to NULL immediately after deallocation or use smart pointers (std::unique_ptr, std::shared_ptr)."
+
+  - id: "CWE-22"
+    title: "Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')"
+    name: "Path Traversal"
+    cwe: "CWE-22"
+    owasp: "A01:2021-Broken Access Control"
+    severity: "HIGH"
+    confidence: 0.88
+    patterns:
+      - "open\\s*\\([^)]*request\\."
+      - "fs\\.readFile\\s*\\([^)]*req\\."
+      - "\\.\\./|\\.\\.\\\\\\"
+      - "path\\.join\\([^)]*req\\."
+    remediation:
+      description: "Resolve real paths with os.path.abspath and verify they reside within the designated safe root directory."
+
+  - id: "CWE-352"
+    title: "Cross-Site Request Forgery (CSRF)"
+    name: "Cross-Site Request Forgery"
+    cwe: "CWE-352"
+    owasp: "A01:2021-Broken Access Control"
+    severity: "MEDIUM"
+    confidence: 0.88
+    patterns:
+      - "@csrf_exempt"
+      - "csrf_protection\\s*=\\s*False"
+      - "csrf:\\s*false"
+      - "@app\\.route\\([^)]*methods=\\[[\"']POST[\"']\\]\\)(?!.*@csrf)"
+    remediation:
+      description: "Enable CSRF token verification middleware (Flask-WTF, csurf, Django CSRF) on all state-changing endpoints."
+
+  - id: "CWE-434"
+    title: "Unrestricted Upload of File with Dangerous Type"
+    name: "Unrestricted File Upload"
+    cwe: "CWE-434"
+    owasp: "A04:2021-Insecure Design"
+    severity: "HIGH"
+    confidence: 0.88
+    patterns:
+      - "save\\s*\\(\\s*os\\.path\\.join\\([^,]+,\\s*(?:file|upload)\\.filename\\)"
+      - "req\\.files\\[[^]]*\\]\\.mv\\s*\\("
+    remediation:
+      description: "Validate file extensions and magic byte headers against an explicit allowlist, and store files outside the web root."
+
+  - id: "CWE-862"
+    title: "Missing Authorization"
+    name: "Missing Authorization"
+    cwe: "CWE-862"
+    owasp: "A01:2021-Broken Access Control"
+    severity: "HIGH"
+    confidence: 0.85
+    patterns:
+      - "@app\\.route\\([\"']/api/admin/[^\"']*[\"']\\)(?!.*?@login_required)"
+      - "router\\.(?:post|put|delete)\\([\"']/admin/[^\"']*[\"']\\s*,\\s*(?!.*?auth)"
+    remediation:
+      description: "Apply authorization decorators or middleware (@login_required, @has_role) to protect administrative endpoints."
+
+  - id: "CWE-476"
+    title: "NULL Pointer Dereference"
+    name: "NULL Pointer Dereference"
+    cwe: "CWE-476"
+    owasp: "A04:2021-Insecure Design"
+    severity: "MEDIUM"
+    confidence: 0.80
+    patterns:
+      - "([a-zA-Z0-9_]+)\\s*=\\s*NULL;[\\s\\S]{1,40}\\1->"
+    remediation:
+      description: "Ensure pointers and nullable types are guarded by null-checks prior to member access or dereferencing."
+
+  - id: "CWE-287"
+    title: "Improper Authentication"
+    name: "Improper Authentication"
+    cwe: "CWE-287"
+    owasp: "A07:2021-Identification and Authentication Failures"
+    severity: "HIGH"
+    confidence: 0.90
+    patterns:
+      - "authenticate\\s*\\([^)]*\\)\\s*:\\s*return True"
+      - "verify\\s*=\\s*False"
+      - "auth_enabled\\s*=\\s*False"
+    remediation:
+      description: "Implement robust multi-factor authentication and session management; never bypass authentication gates."
+
+  - id: "CWE-190"
+    title: "Integer Overflow or Wraparound"
+    name: "Integer Overflow"
+    cwe: "CWE-190"
+    owasp: "A03:2021-Injection"
+    severity: "MEDIUM"
+    confidence: 0.82
+    patterns:
+      - "\\bint32\\b.*?\\+.*?\\bint32\\b"
+      - "short.*?\\+.*?short"
+    remediation:
+      description: "Perform safe integer arithmetic using boundary checks or language features that detect overflow/wraparound."
+
+  - id: "CWE-502"
+    title: "Deserialization of Untrusted Data"
+    name: "Insecure Deserialization"
+    cwe: "CWE-502"
+    owasp: "A08:2021-Software and Data Integrity Failures"
+    severity: "CRITICAL"
+    confidence: 0.95
+    patterns:
+      - "pickle\\.loads?\\s*\\("
+      - "yaml\\.load\\s*\\([^,)]*\\)(?!.*?SafeLoader)"
+      - "new\\s+ObjectInputStream\\s*\\("
+      - "unserialize\\s*\\("
+    remediation:
+      description: "Do not deserialize untrusted data with formats that support code execution. Use JSON or safe loaders."
+
+  - id: "CWE-77"
+    title: "Improper Neutralization of Special Elements used in a Command ('Command Injection')"
+    name: "Command Injection"
+    cwe: "CWE-77"
+    owasp: "A03:2021-Injection"
+    severity: "CRITICAL"
+    confidence: 0.90
+    patterns:
+      - "child_process\\.exec\\s*\\(\\s*`"
+      - "system\\s*\\(\\s*f[\"']"
+    remediation:
+      description: "Sanitize arguments and use discrete process parameter arrays rather than string concatenation."
+
+  - id: "CWE-119"
+    title: "Improper Restriction of Operations within the Bounds of a Memory Buffer"
+    name: "Buffer Overflow"
+    cwe: "CWE-119"
+    owasp: "A03:2021-Injection"
+    severity: "HIGH"
+    confidence: 0.85
+    patterns:
+      - "gets\\s*\\("
+      - "scanf\\s*\\(\\s*\"%s\""
+    remediation:
+      description: "Specify maximum buffer widths in format specifiers and use modern bounded memory management functions."
+
+  - id: "CWE-798"
+    title: "Use of Hard-coded Credentials"
+    name: "Hardcoded Credentials"
+    cwe: "CWE-798"
+    owasp: "A02:2021-Cryptographic Failures"
+    severity: "HIGH"
+    confidence: 0.92
+    patterns:
+      - "(?:api_key|apiKey|secret_key|password)\\s*=\\s*[\"'][a-zA-Z0-9_\\-]{8,}[\"']"
+      - "AKIA[0-9A-Z]{16}"
+      - "ghp_[a-zA-Z0-9]{36}"
+    remediation:
+      description: "Remove hardcoded credentials from source code; load keys at runtime via environment variables or secret vaults."
+
+  - id: "CWE-918"
+    title: "Server-Side Request Forgery (SSRF)"
+    name: "SSRF"
+    cwe: "CWE-918"
+    owasp: "A10:2021-Server-Side Request Forgery"
+    severity: "HIGH"
+    confidence: 0.88
+    patterns:
+      - "requests\\.get\\s*\\(\\s*request\\.args"
+      - "axios\\.get\\s*\\(\\s*req\\.query"
+      - "urllib\\.request\\.urlopen\\s*\\(\\s*url"
+    remediation:
+      description: "Validate target URLs against an explicit allowlist of domain names and reject loopback or private RFC 1918 IPs."
+
+  - id: "CWE-306"
+    title: "Missing Authentication for Critical Function"
+    name: "Missing Authentication"
+    cwe: "CWE-306"
+    owasp: "A07:2021-Identification and Authentication Failures"
+    severity: "HIGH"
+    confidence: 0.86
+    patterns:
+      - "@app\\.route\\([\"']/api/payment/[^\"']*[\"']\\)(?!.*?@login_required)"
+      - "@app\\.route\\([\"']/api/transfer/[^\"']*[\"']\\)(?!.*?@login_required)"
+    remediation:
+      description: "Ensure sensitive business workflows (financial transactions, data deletion) enforce user authentication."
+
+  - id: "CWE-362"
+    title: "Concurrent Execution using Shared Resource with Improper Synchronization ('Race Condition')"
+    name: "Race Condition / TOCTOU"
+    cwe: "CWE-362"
+    owasp: "A04:2021-Insecure Design"
+    severity: "MEDIUM"
+    confidence: 0.80
+    patterns:
+      - "os\\.path\\.exists\\([^)]*\\)[\\s\\S]{1,50}open\\("
+      - "fs\\.existsSync\\([^)]*\\)[\\s\\S]{1,50}fs\\.readFileSync\\("
+    remediation:
+      description: "Use atomic file and transaction operations (e.g., O_CREAT | O_EXCL) to prevent Time-of-Check to Time-of-Use flaws."
+
+  - id: "CWE-269"
+    title: "Improper Privilege Management"
+    name: "Privilege Escalation"
+    cwe: "CWE-269"
+    owasp: "A01:2021-Broken Access Control"
+    severity: "HIGH"
+    confidence: 0.85
+    patterns:
+      - "os\\.setuid\\s*\\(\\s*0\\s*\\)"
+      - "user\\.is_admin\\s*=\\s*(?:request|req\\.body)"
+    remediation:
+      description: "Enforce least privilege principles; never grant elevated roles based on client-provided request attributes."
+
+  - id: "CWE-94"
+    title: "Improper Control of Generation of Code ('Code Injection')"
+    name: "Code Injection"
+    cwe: "CWE-94"
+    owasp: "A03:2021-Injection"
+    severity: "CRITICAL"
+    confidence: 0.92
+    patterns:
+      - "\\beval\\s*\\("
+      - "\\bexec\\s*\\("
+      - "new\\s+Function\\s*\\("
+    remediation:
+      description: "Never dynamically evaluate user input as executable code. Use structured data parsing (json.loads) instead."
+
+  - id: "CWE-863"
+    title: "Incorrect Authorization"
+    name: "Incorrect Authorization"
+    cwe: "CWE-863"
+    owasp: "A01:2021-Broken Access Control"
+    severity: "HIGH"
+    confidence: 0.85
+    patterns:
+      - "if\\s+role\\s*==\\s*[\"']admin[\"']\\s*or\\s*True:"
+      - "has_permission\\s*=\\s*True"
+    remediation:
+      description: "Implement centralized, tested role-based access control (RBAC) and verify ownership of objects on every request."
+
+  - id: "CWE-276"
+    title: "Incorrect Default Permissions"
+    name: "Insecure File Permissions"
+    cwe: "CWE-276"
+    owasp: "A05:2021-Security Misconfiguration"
+    severity: "MEDIUM"
+    confidence: 0.85
+    patterns:
+      - "os\\.chmod\\s*\\([^,]+,\\s*0o?777\\)"
+      - "umask\\s*\\(\\s*0\\s*\\)"
+    remediation:
+      description: "Apply restrictive permissions (e.g. 0600 or 0700) to sensitive application files and key stores."
+
+  - id: "CWE-295"
+    title: "Improper Certificate Validation"
+    name: "Disabled SSL/TLS Certificate Verification"
+    cwe: "CWE-295"
+    owasp: "A02:2021-Cryptographic Failures"
+    severity: "HIGH"
+    confidence: 0.92
+    patterns:
+      - "verify\\s*=\\s*False"
+      - "rejectUnauthorized\\s*:\\s*false"
+      - "ssl_verify_peer\\s*=\\s*False"
+      - "InsecureRequestWarning"
+    remediation:
+      description: "Always enable TLS certificate validation in HTTP clients to prevent Man-in-the-Middle (MitM) attacks."

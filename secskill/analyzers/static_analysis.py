@@ -62,10 +62,15 @@ class StaticAnalyzer(BaseAnalyzer):
                 # 1. Match against rich YAML rules
                 for r in yaml_rules:
                     rule_id = r.get("id", "SEC-RULE")
-                    title = r.get("title", "Security Finding")
+                    title = r.get("title", r.get("name", "Security Finding"))
                     sev_str = r.get("severity", "MEDIUM").upper()
                     sev = SEV_MAP.get(sev_str, Severity.MEDIUM)
                     cwe = r.get("cwe", "CWE-Generic")
+                    owasp = r.get("owasp", None)
+                    conf_val = r.get("confidence", 0.85)
+                    conf = Confidence.HIGH if conf_val >= 0.85 else (Confidence.MEDIUM if conf_val >= 0.6 else Confidence.LOW)
+                    remed = r.get("remediation", {})
+                    remediation_desc = remed.get("description", str(remed)) if isinstance(remed, dict) else (str(remed) if remed else None)
                     patterns = r.get("patterns", [])
 
                     for line_idx, line in enumerate(lines, 1):
@@ -79,11 +84,13 @@ class StaticAnalyzer(BaseAnalyzer):
                                             title=title,
                                             description=f"Rule {rule_id} triggered by pattern '{pat}'",
                                             severity=sev,
-                                            confidence=Confidence.HIGH,
+                                            confidence=conf,
                                             file_path=file_rel,
                                             line_number=line_idx,
                                             code_snippet=line.strip(),
                                             cwe_id=cwe,
+                                            owasp_category=owasp,
+                                            remediation=remediation_desc,
                                         )
                                     )
                                     break

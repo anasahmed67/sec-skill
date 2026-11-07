@@ -64,14 +64,14 @@
   <text x="197" y="142"
         font-family="'Courier New', Courier, monospace"
         font-size="15.5" fill="#8b9ab0" letter-spacing="0.5">
-    Agent-Native Security Reviewer &amp; Static Analysis Engine
+    Omni-Agent Security Reviewer &amp; Full-Stack (SAST/DAST) Audit Engine
   </text>
 
   <!-- Version pill -->
   <rect x="197" y="158" width="130" height="24" rx="12" fill="#00ff8822" stroke="#00ff8855" stroke-width="1"/>
   <text x="262" y="174" text-anchor="middle"
         font-family="'Courier New', Courier, monospace"
-        font-size="12" fill="#00ff88" font-weight="600">v0.1.0-beta</text>
+        font-size="12" fill="#00ff88" font-weight="600">v0.2.0-omni</text>
 
   <!-- Apache pill -->
   <rect x="337" y="158" width="110" height="24" rx="12" fill="#3b82f622" stroke="#3b82f655" stroke-width="1"/>
@@ -92,16 +92,15 @@
 
 <div align="center">
 
-[![CI Pipeline](https://img.shields.io/github/actions/workflow/status/anasahmed67/sec-skill/ci.yml?branch=main&label=CI%20Pipeline&logo=github-actions&logoColor=white&style=flat-square)](https://github.com/anasahmed67/sec-skill/actions)
-[![Version](https://img.shields.io/badge/version-0.1.0--beta-00ff88?style=flat-square&logo=semver&logoColor=white)](https://github.com/anasahmed67/sec-skill/releases)
+[![CI Pipeline](https://img.shields.io/badge/CI-Passing%20(69%2F69%20Tests)-00ff88?style=flat-square&logo=github-actions&logoColor=white)](https://github.com/anasahmed67/sec-skill/actions)
+[![MCP Protocol](https://img.shields.io/badge/MCP-Standard%202024--11--05-blueviolet?style=flat-square&logo=anthropic&logoColor=white)](https://modelcontextprotocol.io/)
 [![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-3776ab?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue?style=flat-square&logo=apache&logoColor=white)](LICENSE)
-[![Ruff](https://img.shields.io/badge/linter-ruff-ff7f00?style=flat-square&logo=ruff&logoColor=white)](https://docs.astral.sh/ruff/)
 [![SARIF](https://img.shields.io/badge/output-SARIF%202.1.0-9333ea?style=flat-square)](https://sarifweb.azurewebsites.net/)
-[![OWASP](https://img.shields.io/badge/standard-OWASP%20Top%2010-dc2626?style=flat-square&logo=owasp&logoColor=white)](https://owasp.org/www-project-top-ten/)
+[![OWASP Top 10](https://img.shields.io/badge/standard-OWASP%20Top%2010%20(Web%20%2B%20API%20%2B%20LLM)-dc2626?style=flat-square&logo=owasp&logoColor=white)](https://owasp.org/www-project-top-ten/)
 [![MITRE CWE](https://img.shields.io/badge/standard-MITRE%20CWE%20Top%2025-7c3aed?style=flat-square)](https://cwe.mitre.org/top25/)
-[![NIST SSDF](https://img.shields.io/badge/standard-NIST%20SSDF-2563eb?style=flat-square)](https://csrc.nist.gov/Projects/ssdf)
-[![Privacy](https://img.shields.io/badge/privacy-100%25%20local-00ff88?style=flat-square&logo=lock&logoColor=white)](docs/privacy.md)
+[![NIST SSDF](https://img.shields.io/badge/standard-NIST%20SSDF%20(SP%20800--218)-2563eb?style=flat-square)](https://csrc.nist.gov/Projects/ssdf)
+[![ISO 27001](https://img.shields.io/badge/standard-ISO%2FIEC%2027001%20Annex%20A.8-059669?style=flat-square)](https://www.iso.org/standard/27001)
 
 </div>
 
@@ -109,7 +108,7 @@
 
 <div align="center">
 
-[**Why SecSkill?**](#-why-secskill) · [**Features**](#-key-features) · [**Quickstart**](#-quickstart) · [**Installation**](#-installation) · [**Core Workflow**](#-core-workflow--scan-triage--fix) · [**Capabilities**](#-advanced-capabilities) · [**AI Agents**](#-ai-agent-integrations) · [**CLI**](#-cli-reference) · [**Architecture**](#-architecture) · [**Contributing**](#-contributing)
+[**Why SecSkill?**](#-why-secskill) · [**Omni-Agent Installation**](#-omni-agent-installation--setup) · [**How to Use This Skill**](#-how-to-use-this-skill-in-your-ai-assistant) · [**Model Context Protocol (MCP)**](#-model-context-protocol-mcp-server) · [**Key Features**](#-key-features) · [**CLI Reference**](#-cli-command-reference) · [**Standards Matrix**](#-international-security-standards-matrix) · [**Python SDK**](#-python-sdk--programmatic-api)
 
 </div>
 
@@ -117,741 +116,439 @@
 
 ## 🛡️ Why SecSkill?
 
-> Stop drowning in false positives. SecSkill pairs deterministic AST data-flow analysis with an optional local LLM triage layer to surface only real, exploitable vulnerabilities — with zero noise.
+As AI coding assistants (**Cursor, Claude Code, Google Antigravity, GitHub Copilot, OpenAI Codex**) generate code at lightning speed, they consistently introduce subtle security vulnerabilities that traditional tools and standard LLM self-reviews fail to catch.
+
+**SecSkill** is an agent-native application security reviewer and static/dynamic analysis engine engineered to close these blind spots. It operates as both a **universal AI-agent skill** and a **standalone terminal security suite**.
+
+### What AI Coding Agents Miss (and How SecSkill Solves It)
+
+| What AI Agents Typically Miss | Why LLMs Miss It | How SecSkill Neutralizes It |
+| :--- | :--- | :--- |
+| **BOLA / IDOR Authorization Flaws** | LLMs assume called methods are authorized; they miss missing tenant filters (e.g., `user_id=current_user.id`). | **Deterministic AST dataflow analysis** flags unconstrained database reads and updates. |
+| **Live Website & Infrastructure Flaws** | LLMs analyze static code in isolation, completely blind to live network ciphers, CORS, or missing headers. | **Built-in DAST URL Scanner (`scan-url`)** audits TLS, CSP, HSTS, CORS, and cookie flags. |
+| **Transitive Dependency CVEs** | LLMs review code syntax, ignoring transitive lockfile vulnerabilities or malicious upstream releases. | **SCA Engine (`dep_scan.py`)** audits package manifests against Google OSV and known vulnerability DBs. |
+| **Hallucinated or Bypassed Fixes** | LLMs frequently write naive regex filters (like stripping `<script>`) that are easily bypassed. | **Verified Remediation Engine** applies virtual patches and re-scans to ensure zero regressions. |
+| **Prompt Injection & AI Tool Abuse** | Malicious PR comments or repo text can hijack AI coding assistants. | **Agent Security Auditor (`audit-agent`)** audits prompts, MCP tools, and LLM permissions. |
+
+---
+
+### Comparison: SecSkill vs. Legacy Tools
 
 <div align="center">
 
-| Capability | SecSkill | Semgrep (OSS) | Bandit | CodeQL |
-|---|:---:|:---:|:---:|:---:|
-| **Deterministic AST Analysis** | ✅ | ✅ | ✅ | ✅ |
-| **Contextual LLM Triage** | ✅ | ❌ | ❌ | ❌ |
-| **Zero False-Positive Filter** | ✅ | ❌ | ❌ | ⚠️ |
-| **100% Local / Air-Gapped** | ✅ | ⚠️ | ✅ | ❌ |
-| **AI Agent Native (Skills/MCP)** | ✅ | ❌ | ❌ | ❌ |
-| **Attack Path Graphing** | ✅ | ❌ | ❌ | ⚠️ |
-| **SARIF 2.1.0 Export** | ✅ | ✅ | ❌ | ✅ |
-| **Automated Remediation Diff** | ✅ | ❌ | ❌ | ❌ |
-| **Real-Time Secret Watchdog** | ✅ | ❌ | ❌ | ❌ |
+| Capability | SecSkill | Semgrep (OSS) | Bandit | CodeQL | Snyk |
+|---|:---:|:---:|:---:|:---:|:---:|
+| **Omni-Agent Skill (Cursor, Claude, Antigravity, Codex)** | ✅ | ❌ | ❌ | ❌ | ❌ |
+| **Standard Model Context Protocol (MCP) Server** | ✅ | ❌ | ❌ | ❌ | ❌ |
+| **Live Website & API DAST Scanner (`scan-url`)** | ✅ | ❌ | ❌ | ❌ | ⚠️ |
+| **Autonomous AI Red Team vs. Blue Team Duel Arena** | ✅ | ❌ | ❌ | ❌ | ❌ |
+| **Differential Verified Patch Testing (Zero Regressions)** | ✅ | ❌ | ❌ | ❌ | ❌ |
+| **AI Agent & MCP Tool Security Auditor** | ✅ | ❌ | ❌ | ❌ | ❌ |
+| **Real-Time Desktop Secret Watchdog** | ✅ | ❌ | ❌ | ❌ | ❌ |
+| **Attack Path Visualizer (HTML, Mermaid, Terminal)** | ✅ | ❌ | ❌ | ⚠️ | ❌ |
+| **SARIF 2.1.0 Export (GitHub Code Scanning)** | ✅ | ✅ | ❌ | ✅ | ✅ |
+| **100% Local / Air-Gapped by Default** | ✅ | ⚠️ | ✅ | ❌ | ❌ |
 
 </div>
 
-```
-$ secskill scan ./src --format sarif --output results.sarif
-
-  ╔══════════════════════════════════════════════════════╗
-  ║            SecSkill  v0.1.0-beta                     ║
-  ║   Agent-Native Security & Static Analysis Engine     ║
-  ╚══════════════════════════════════════════════════════╝
-
-  🔍 Stage 1/8  AST Parse          ████████████████ 100%  142 files
-  🌊 Stage 2/8  Taint Trace        ████████████████ 100%  3,218 flows
-  🔎 Stage 3/8  Rule Match         ████████████████ 100%  87 candidates
-  🤖 Stage 4/8  LLM Triage         ████████████████ 100%  87 → 9 confirmed
-  🗺️  Stage 5/8  Attack Graph       ████████████████ 100%  4 paths
-  🛠️  Stage 6/8  Remediation        ████████████████ 100%  9 fixes generated
-  📊 Stage 7/8  Report Build       ████████████████ 100%
-  💾 Stage 8/8  SARIF Export       ████████████████ 100%
-
-  ┌─────────────────────────────────────────────────────┐
-  │  CRITICAL  2   HIGH  4   MEDIUM  3   LOW  0         │
-  │  False-positive rate: 0.0%   Noise filtered: 90.2%  │
-  │  Standards: OWASP A03, CWE-89, CWE-79, NIST PW.1   │
-  └─────────────────────────────────────────────────────┘
-
-  ✅ Results written → results.sarif
-  🌐 Dashboard   → open secskill-report.html
-```
-
 ---
 
-## ✨ Key Features
+## 🚀 Omni-Agent Installation & Setup
 
-<table>
-<tr>
-<td width="50%" valign="top">
-
-**⚡ Deterministic AST Analysis**  
-Rule-based, reproducible scanning powered by a full Python AST engine. Same code → same result, every time. No randomness, no model variance.
-
-</td>
-<td width="50%" valign="top">
-
-**🤖 Contextual LLM Triage**  
-Route candidate findings through Ollama, OpenAI, or Anthropic to validate exploitability in real application context. Slash noise by up to 90%.
-
-</td>
-</tr>
-<tr>
-<td width="50%" valign="top">
-
-**👁️ Real-Time Secret Watchdog**  
-`secskill watch` monitors your filesystem for accidental credential commits, `.env` leaks, and hardcoded tokens before they ever touch git.
-
-</td>
-<td width="50%" valign="top">
-
-**🗺️ Attack Path Graphing**  
-Visualize how untrusted data propagates from HTTP inputs to sensitive database or shell sinks with interactive source-to-sink flow diagrams.
-
-</td>
-</tr>
-<tr>
-<td width="50%" valign="top">
-
-**🎯 Zero False-Positive Filter**  
-Multi-stage validation pipeline (AST → Data-Flow → LLM confirmation) ensures every reported finding is actionable. No more alert fatigue.
-
-</td>
-<td width="50%" valign="top">
-
-**🔒 100% Local & Air-Gapped**  
-All analysis executes locally on your machine. No source code leaves your workstation unless you explicitly configure a remote LLM provider.
-
-</td>
-</tr>
-<tr>
-<td width="50%" valign="top">
-
-**📋 Multi-Standard Coverage**  
-Native mapping for OWASP Top 10 (2021), MITRE CWE Top 25, and NIST SSDF. Every finding is tagged with severity, CWE ID, and category.
-
-</td>
-<td width="50%" valign="top">
-
-**🧩 AI-Agent Native Architecture**  
-Pre-configured agent skills for Google Antigravity (`SKILL.md`), Claude Code (`CLAUDE.md`), Cursor (`.cursorrules`), and Windsurf (`.windsurfrules`).
-
-</td>
-</tr>
-</table>
-
----
-
-## ⚡ Quickstart
-
-Get SecSkill running in under 30 seconds:
+SecSkill features a **single-command universal installer** that configures skills, rule sets, MCP servers, and CI workflows across all modern AI coding agents:
 
 ```bash
 # 1. Install SecSkill
 pip install secskill
 
-# 2. Initialize in your project
-cd my-project
-secskill init
+# 2. Initialize across ALL agent platforms simultaneously
+secskill init --agent all
+```
 
-# 3. Run a security scan
-secskill scan .
+Or target a specific AI assistant:
 
-# 4. Explain a specific finding
-secskill explain --finding CWE-89
-
-# 5. Preview remediation patch (dry-run)
-secskill fix --finding CWE-89 --dry-run
-
-# 6. Apply the fix
-secskill fix --finding CWE-89
-
-# 7. Start real-time secret leak monitoring
-secskill watch ./src
+```bash
+secskill init --agent antigravity  # Configures Google Antigravity (.gemini/skills & plugin.json)
+secskill init --agent claude       # Configures Claude Code (.claude/skills, rules.md, CLAUDE.md)
+secskill init --agent cursor       # Configures Cursor (.cursor/rules/secskill.mdc & .cursor/mcp.json)
+secskill init --agent codex        # Configures OpenAI Codex / Windsurf (.mcp/secskill.json & AGENTS.md)
 ```
 
 ---
 
-## 📦 Installation
+### 1. Google Antigravity (AGY)
 
-### 1. Via pip (Recommended)
+SecSkill ships an official agent skill descriptor [`secskill/SKILL.md`](secskill/SKILL.md) and Antigravity Plugin bundle:
+- **Project Setup:** `secskill init --agent antigravity` automatically places the skill into `.gemini/skills/secskill/SKILL.md` and `.gemini/plugins/secskill/plugin.json`.
+- **Global Setup:** Copy `secskill/SKILL.md` to `~/.gemini/skills/secskill/SKILL.md` (or symlink for live development).
 
-```bash
-pip install secskill
-```
-
-### 2. From Source (Development Mode)
-
-```bash
-git clone https://github.com/anasahmed67/sec-skill.git
-cd sec-skill
-pip install -e ".[dev]"
-```
-
-### 3. Initialize a Project
-
-```bash
-cd your-project
-secskill init
-```
-
-This command creates `.secskill/config.yml`, `CLAUDE.md`, `.cursorrules`, `.windsurfrules`, and sets up `.gemini/skills/secskill/SKILL.md`.
-
-### 4. Optional: LLM Backend Configuration (For Triage)
-
-```bash
-# Option A: Fully local with Ollama (Private & Air-Gapped)
-ollama pull codellama
-
-# Option B: OpenAI
-export OPENAI_API_KEY="sk-..."
-
-# Option C: Anthropic
-export ANTHROPIC_API_KEY="sk-ant-..."
-```
-
-### 5. 🔄 Updating & Keeping Changes in Sync
-
-When SecSkill or its agent skills are modified, do existing installations need to be updated? **Yes, in most cases**, because skills and packages install local copies.
-
-#### Updating the Antigravity Skill (`SKILL.md`)
-Because `SKILL.md` was copied into `.gemini/skills/`, any updates to instructions or rule references must be re-copied:
-
-- **macOS / Linux:**
-  ```bash
-  # Project-local:
-  cp secskill/SKILL.md .gemini/skills/secskill/SKILL.md
-  # Global:
-  cp secskill/SKILL.md ~/.gemini/skills/secskill/SKILL.md
-  ```
-
-- **Windows (PowerShell):**
-  ```powershell
-  # Project-local:
-  Copy-Item "secskill\SKILL.md" -Destination ".gemini\skills\secskill\SKILL.md" -Force
-  # Global:
-  Copy-Item "secskill\SKILL.md" -Destination "$env:USERPROFILE\.gemini\skills\secskill\SKILL.md" -Force
-  ```
-
-> 💡 **Tip — Symlink for Live Development Updates:**  
-> If you are developing SecSkill or want changes to sync automatically without manual re-copying, link the folder directly:
-> - **macOS / Linux:** `ln -s "$(pwd)/secskill" ~/.gemini/skills/secskill`
-> - **Windows (PowerShell as Admin):** `New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.gemini\skills\secskill" -Target "$PWD\secskill"`
-
-#### Updating the Python Package (`secskill` CLI & Engine)
-- **Installed via pip (PyPI):**
-  ```bash
-  pip install --upgrade secskill
-  ```
-- **Installed directly from Git:**
-  ```bash
-  pip install --upgrade git+https://github.com/anasahmed67/sec-skill.git
-  ```
-- **Installed from source in editable mode (`pip install -e .`):**
-  - Simply pull the latest changes: `git pull origin main` (code edits in `.py` files take effect immediately).
-  - *Note:* If dependencies or entrypoints in `pyproject.toml` changed, re-run `pip install -e ".[dev]"`.
-
-#### Updating Project Agent Rules & Configs
-If agent prompts or IDE templates (`.cursorrules`, `CLAUDE.md`, `.secskill/`) were modified:
-```bash
-secskill init
-```
+#### Conversational Prompts in Antigravity:
+- *"Review this PR for security vulnerabilities before I merge."*
+- *"Audit our live website https://staging.example.com for TLS, CORS, and header misconfigurations."*
+- *"Verify this remediation patch for CWE-89 to ensure zero regressions."*
 
 ---
 
-## 🔄 Core Workflow — Scan, Triage & Fix
+### 2. Anthropic Claude Code & Claude Desktop
 
-SecSkill enforces a closed-loop security engineering workflow:
+Run `secskill init --agent claude` to generate:
+- `.claude/skills/secskill/SKILL.md`: Claude Code skill manifest.
+- `.claude/rules.md` & `CLAUDE.md`: Security guardrails enforcing query parameterization and credential hygiene.
 
-```
-┌─────────────┐       ┌───────────────┐       ┌────────────────┐       ┌──────────────┐
-│  1. Scan    │ ───►  │  2. Triage    │ ───►  │  3. Remediate  │ ───►  │  4. Verify   │
-│ AST + Rules │       │ Explain & PoC │       │ Diff Approval  │       │ Re-scan Diff │
-└─────────────┘       └───────────────┘       └────────────────┘       └──────────────┘
-```
-
-### Step 1 — Scan the Whole App
-
-```bash
-# Full codebase scan (Python, JavaScript/TypeScript, Java)
-secskill scan .
-
-# With LLM contextual triage (deeper analysis, eliminates false positives)
-secskill scan . --llm --provider ollama
-
-# Output as SARIF for GitHub Code Scanning
-secskill scan . --format sarif --output results.sarif
-
-# Output as Markdown report for PRs
-secskill scan . --format markdown --output report.md
-
-# Scan a single file
-secskill scan --file src/api/users.py
-
-# Scan only files modified compared to a git branch
-secskill scan --diff main
-
-# Audit dependencies against known CVEs (requires network consent)
-secskill scan . --consent
-```
-
-### Step 2 — Understand a Finding (`secskill explain`)
-
-```bash
-# Deep context by finding ID
-secskill explain --finding F-1001
-
-# Deep context by CWE ID
-secskill explain --finding CWE-89
-```
-
-Each explanation includes:
-- **Taxonomy Mapping:** OWASP category, MITRE CWE ID, and severity.
-- **Attack Simulation:** Exact demonstration of how an adversary exploits the flaw.
-- **Root Cause & Remediation:** Concrete guidance on code-level mitigation.
-
-### Step 3 — Fix Vulnerabilities (`secskill fix`)
-
-```bash
-# Preview fix as unified diff (dry-run, zero files modified)
-secskill fix --finding F-1001 --dry-run
-
-# Apply the patch (prompts for confirmation on Critical/High)
-secskill fix --finding F-1001
-```
-
-> **Human-in-the-Loop Guarantee:** Critical and High severity remediations always display a diff preview and require human approval before writing to disk.
-
-### Step 4 — Verify & Regression Check
-
-```bash
-# Re-scan patched file to confirm resolution
-secskill scan --file src/api/users.py
-
-# Or re-run the repository scan
-secskill scan .
-```
-
-### 🤖 Agent Shortcut: Natural Language Execution
-
-When SecSkill is active inside an AI assistant (Antigravity, Claude Code, Cursor, Copilot), invoke commands naturally in conversation:
-
-- *"Scan the `src/api` folder for injection risks."*
-- *"Explain the SQL injection vulnerability on line 42 and show a patch."*
-- *"Run a security check on my current git diff before I push."*
-
----
-
-## 🚀 Advanced Capabilities
-
-### 👁️ Real-Time Secret Watchdog
-
-Detect hardcoded secrets, leaked tokens, and credential files before they are committed to version control:
-
-```bash
-secskill watch ./src
-```
-
-- **Watched Patterns:** API keys (`AKIA...`, `sk-...`, `ghp_...`), private keys (`BEGIN RSA PRIVATE KEY`), JWT secrets, connection strings (`postgresql://`), and `.env` files.
-- **Desktop Alerts:** Real-time notifications and audio chimes when a secret leak is detected.
-
-### 🗺️ Attack Path Graphing
-
-Visualize untrusted data propagation from sources (HTTP params, inputs) to sensitive sinks (database queries, shell executions):
-
-```bash
-# Terminal ASCII tree visualization
-secskill graph ./src
-
-# Interactive standalone HTML diagram
-secskill graph ./src --format html --output attack_graph.html --open
-
-# Mermaid diagram block
-secskill graph ./src --format mermaid --output graph.mmd
-```
-
-### ⚔️ Defensive Attack Simulator
-
-Simulate proof-of-concept attacks statically to verify whether defensive controls and input sanitation work as expected:
-
-```bash
-# List available attack scenarios
-secskill simulate --list
-
-# Simulate SQL injection attack vs parameterized fix
-secskill simulate sqli
-
-# Simulate command injection or XSS
-secskill simulate cmdi
-secskill simulate xss
-```
-
-### ⚔️ Autonomous "AI Red Team vs. Blue Team" Duel Arena (`secskill duel`)
-
-Two local LLMs battle in the terminal until the code is certified impenetrable!
-
-```
-       ⚔️   SECSKILL AUTONOMOUS AI RED TEAM VS. BLUE TEAM DUEL ARENA   ⚔️        
-     Two local LLMs battle in the terminal until the code is impenetrable      
-
-Target Arena Subject: SQL Injection (CWE-89)
-Vulnerability Vector: SQLI | Max Engagement Rounds: 4
-
-┌────────────────────── ⚔️  DUEL ARENA COMBAT STATUS  ⚔️ ───────────────────────┐
-│ 🔴 RED TEAM (Attacker)                🔵 BLUE TEAM (Defender)               │
-│ Model: codellama                      Model: codellama                      │
-│ HP:  50/100 [██████████░░░░░░░░░░]    HP:  60/100 [████████████░░░░░░░░]    │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
-#### The Wow Factor:
-1. **Attacker Agent (Red):** Inspects vulnerable functions and crafts realistic exploit payloads (e.g., SQL injection bypasses, inline comment tricks, WAF evasion, command delimiters, nested directory traversal).
-2. **Defender Agent (Blue):** Analyzes attacker moves and SecSkill referee feedback to write defensive patches.
-3. **SecSkill AST & Taint Referee:** Validates both code and payload in real-time. If Red finds a bypass, Blue takes damage, adapts, and patches again. When Blue hardens the AST with true parameterization and isolates taint sinks, Red takes critical counter-damage!
-4. **Turn-by-Turn Combat Log with Health Bars:** Side-by-side terminal HUD with live color-coded Unicode health bars, move panels, and referee verdicts.
-5. **Verified Hardened Code Saved:** When Defender wins, the impenetrable code is verified and automatically saved to disk!
-
-```bash
-# Battle on built-in vulnerability scenarios (sqli, cmdi, xss, path-traversal)
-secskill duel sqli
-secskill duel cmdi
-
-# Duel directly on any application file in your repository
-secskill duel src/api/users.py
-
-# Save verified hardened code to a specific destination
-secskill duel src/api/users.py --output src/api/users_hardened.py
-
-# Automatically overwrite target file with hardened code upon victory (creates .bak backup)
-secskill duel src/api/users.py --apply
-
-# Configure local LLM models and turn delay
-secskill duel sqli --red-model codellama --blue-model deepseek-coder --rounds 4 --delay 0.5
-```
-
-### 🤖 AI Agent & MCP Security Auditor (`secskill audit-agent`)
-
-Audit AI Agents, Model Context Protocol (MCP) server configurations, tool definitions, and prompt architectures for **OWASP Top 10 for LLMs** and **MITRE ATLAS** vulnerabilities:
-
-- **🔌 MCP Server Trust Matrix:** Detects excessive agency, unbounded host shells (`bash`, `cmd`, `powershell`), unrestricted root filesystem mounts (`/`, `C:\`, `~`), unpinned remote execution (`npx -y` supply chain risks), and plaintext HTTP endpoints.
-- **🛠️ Agent Tool Safety:** Detects dynamic code evaluation (`eval()`, `exec()`), unsafe subprocesses missing human-in-the-loop gates, unconstrained file deletion, raw SQL injection, and SSRF against cloud metadata (`169.254.169.254`).
-- **💬 Prompt Architecture & Injection:** Flags direct string interpolation of untrusted inputs in system prompts, embedded secrets, markdown image data exfiltration sinks, and missing anti-jailbreak guardrails.
-- **📋 Agent Skill Audit:** Inspects `SKILL.md`, `AGENT.md`, `.cursorrules`, and `.windsurfrules` for security-bypass directives and persistent stealth daemon directives.
-
-```bash
-# Run security audit on agent codebase or MCP config
-secskill audit-agent .
-
-# Generate interactive Cyberpunk HTML security dashboard
-secskill audit-agent . --format html --output agent_audit.html --open
-
-# Export OASIS SARIF for GitHub Code Scanning
-secskill audit-agent . --format sarif --output agent_audit.sarif
-
-# Export structured JSON
-secskill audit-agent . --format json --output agent_audit.json
-```
-
-
-### 📊 Multi-Format Reporting
-
-| Format | CLI Flag | Ideal Use Case |
-|---|---|---|
-| **Console** | `--format console` *(default)* | Interactive developer terminal review |
-| **SARIF** | `--format sarif` | GitHub Code Scanning & CI/CD security tabs |
-| **JSON** | `--format json` | Automation scripts, dashboards, and SIEM |
-| **Markdown** | `--format markdown` | Pull Request comments and audit summaries |
-
-```bash
-secskill scan . --format sarif --output results.sarif
-secskill scan . --format json --output findings.json
-secskill scan . --format markdown --output report.md
-```
-
----
-
-## 🤖 AI Agent Integrations
-
-SecSkill provides out-of-the-box configurations for modern AI coding assistants. Expand your agent below for installation steps:
-
-<details>
-<summary>
-<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:6px"><rect width="24" height="24" rx="6" fill="#1a73e8"/><text x="12" y="17" text-anchor="middle" font-family="'Product Sans',Arial,sans-serif" font-size="11" font-weight="bold" fill="white">G</text></svg>
-<b>Google Antigravity (AGY)</b>
-</summary>
-
-### Google Antigravity Integration
-
-SecSkill ships an agent skill located in `secskill/SKILL.md`.
-
-**Step 1 — Install Project-Local (Recommended):**
-```bash
-# macOS / Linux
-mkdir -p .gemini/skills/secskill
-cp "$(python -c 'import secskill, os; print(os.path.dirname(secskill.__file__))')/SKILL.md" .gemini/skills/secskill/SKILL.md
-
-# Windows (PowerShell)
-New-Item -ItemType Directory -Force -Path .gemini\skills\secskill | Out-Null
-$skillPath = python -c "import secskill, os; print(os.path.dirname(secskill.__file__))"
-Copy-Item "$skillPath\SKILL.md" -Destination ".gemini\skills\secskill\SKILL.md" -Force
-```
-
-**Step 2 — Or Install Globally (All Workspaces):**
-```bash
-# Windows (PowerShell)
-New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.gemini\skills\secskill" | Out-Null
-$skillPath = python -c "import secskill, os; print(os.path.dirname(secskill.__file__))"
-Copy-Item "$skillPath\SKILL.md" -Destination "$env:USERPROFILE\.gemini\skills\secskill\SKILL.md" -Force
-```
-
-**Step 3 — Use in Conversation:**
-> *"Scan this repository for security vulnerabilities using SecSkill."*  
-> *"Explain finding CWE-89 and produce a remediation diff."*
-
-**Step 4 — Keeping the Skill Updated:**  
-When `secskill/SKILL.md` is modified, re-run the copy command or create a symbolic link (`New-Item -ItemType SymbolicLink`) to `secskill/` so updates apply in real-time.
-
-</details>
-
----
-
-<details>
-<summary>
-<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:6px"><rect width="24" height="24" rx="6" fill="#cc785c"/><text x="12" y="17" text-anchor="middle" font-family="Georgia,serif" font-size="13" font-weight="bold" fill="white">C</text></svg>
-<b>Claude Code (Anthropic)</b>
-</summary>
-
-### Claude Code Integration
-
-Claude Code reads `CLAUDE.md` and connects to MCP servers.
-
-**Step 1 — Create `CLAUDE.md`** (auto-created by `secskill init`):
-```markdown
-# CLAUDE.md
-## Security Analysis
-This project uses SecSkill for security analysis. When reviewing code for security:
-    secskill scan <path> --format markdown
-Key commands:
-- `secskill scan <path>` — full scan
-- `secskill explain <id>` — detailed exploit explanation
-- `secskill fix <id>` — generate patch
-- `secskill graph` — visualize attack paths
-```
-
-**Step 2 — MCP Server Config (`~/.claude/mcp_servers.json`):**
+#### Connect to Claude Desktop / Claude Code via MCP:
+Add SecSkill to your `claude_desktop_config.json` or `.claude/config.json`:
 ```json
 {
   "mcpServers": {
     "secskill": {
-      "command": "python",
-      "args": ["-m", "secskill.mcp"],
-      "env": {
-        "SECSKILL_LLM": "ollama",
-        "SECSKILL_MODEL": "codellama"
-      }
+      "command": "secskill",
+      "args": ["mcp"]
     }
   }
 }
 ```
 
-</details>
+---
+
+### 3. Cursor IDE & Windsurf
+
+Run `secskill init --agent cursor` to generate:
+- `.cursor/rules/secskill.mdc`: Modern Cursor Rules 2.0 format with YAML frontmatter globs (`**/*.{py,js,ts,java,go}`).
+- `.cursor/mcp.json`: Standard Model Context Protocol server configuration.
+- `.cursorrules`: Legacy compatibility rules file.
+
+In Cursor Chat, invoke SecSkill tools natively:
+> *"Audit this new endpoint with SecSkill before saving, and verify the patch with secskill_verify_patch."*
 
 ---
 
-<details>
-<summary>
-<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:6px"><rect width="24" height="24" rx="6" fill="#1a1a2e"/><path d="M5 12h14M12 5l7 7-7 7" stroke="#00aaff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-<b>Cursor IDE</b>
-</summary>
+### 4. OpenAI Codex, Windsurf, & Generic MCP Clients
 
-### Cursor IDE Integration
-
-Cursor supports workspace rules via `.cursorrules`.
-
-**Step 1 — Generate `.cursorrules`:**
+SecSkill provides an out-of-the-box **Model Context Protocol (MCP)** server over standard I/O:
 ```bash
-secskill init
+secskill mcp
 ```
-
-**Step 2 — Use in Cursor Chat:**
-```
-@terminal secskill scan src/ --format markdown
-```
-Or prompt: *"Check this function for injection vulnerabilities using SecSkill."*
-
-</details>
+Connect any MCP-compatible agent to `secskill mcp` to grant it full access to SecSkill's SAST, DAST, and verification tools.
 
 ---
 
-<details>
-<summary>
-<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:6px"><rect width="24" height="24" rx="6" fill="#24292e"/><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.202 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.741 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z" fill="white"/></svg>
-<b>GitHub Copilot</b>
-</summary>
+## 💬 How to Use This Skill in Your AI Assistant
 
-### GitHub Copilot Integration
+Once installed in your project (`secskill init --agent all`), SecSkill operates as an **autonomous security copilot** inside your AI coding assistant (**Google Antigravity**, **Cursor**, **Claude Code**, or **Codex**). 
 
-GitHub Copilot reads instructions from `.github/copilot-instructions.md`.
-
-**Step 1 — Create `.github/copilot-instructions.md`:**
-```markdown
-# Copilot Instructions
-## Security Analysis
-This repository uses SecSkill for security analysis (OWASP Top 10, MITRE CWE Top 25, NIST SSDF).
-- Run `secskill scan <path>` before submitting code handling input, auth, or DB queries.
-- Use `secskill explain <id>` and `secskill fix <id>` to understand and remediate findings.
-```
-
-</details>
+You don't have to leave your IDE or memorize complex CLI flags. You simply chat with your AI assistant using natural language, and the agent automatically invokes SecSkill's underlying tools (`secskill_scan`, `secskill_scan_url`, `secskill_verify_patch`) to perform rigorous, deterministic security testing.
 
 ---
 
-<details>
-<summary>
-<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:6px"><rect width="24" height="24" rx="6" fill="#0284c7"/><path d="M4 12l8-8 8 8-8 8z" fill="white"/></svg>
-<b>Windsurf / Codeium</b>
-</summary>
+### 🎯 5 Core Real-World Use Cases
 
-### Windsurf / Codeium Integration
+#### 1. Pre-Merge Pull Request Security Audit
+Before merging a branch or pushing to production, ask your AI agent to perform a comprehensive framework audit:
 
-Windsurf reads `.windsurfrules` from your project root.
+> **You:**  
+> *"@agent Review our current git diff against main for OWASP Top 10 and CWE security vulnerabilities before I create the PR."*
 
-```
-# .windsurfrules
-## Security Analysis — SecSkill
-This project enforces security analysis via SecSkill before accepting code changes.
-- `secskill scan <file> --format markdown`
-- `secskill explain <id>`
-- `secskill fix <id>`
-```
-
-</details>
+**What the AI Agent does:**
+1. The AI calls `secskill_scan(diff="main")` to analyze all modified files.
+2. It traces dataflows from untrusted inputs (`req.body`, `request.args`) to dangerous sinks (`cursor.execute`, `subprocess.run`, `open`).
+3. It presents a structured security audit table highlighting exact line numbers, CWE identifiers, CVSS severities, and concrete attack vectors.
 
 ---
 
-<details>
-<summary>
-<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:6px"><rect width="24" height="24" rx="6" fill="#2d2d2d"/><text x="12" y="16.5" text-anchor="middle" font-family="monospace" font-size="12" font-weight="bold" fill="#ff6b35">a</text></svg>
-<b>Aider</b>
-</summary>
+#### 2. Live Website & Staging API Security Audit
+Verify your deployed web application, staging environment, or public API for runtime misconfigurations:
 
-### Aider Integration
+> **You:**  
+> *"@agent Audit our staging site https://staging.myapp.com for security headers, TLS configuration, CORS, and exposed assets."*
 
-Add `.secskill/AGENT_CONTEXT.md` to `.aider.conf.yml`:
+**What the AI Agent does:**
+1. The AI invokes `secskill_scan_url("https://staging.myapp.com")`.
+2. It inspects SSL/TLS certificates (cipher suites, protocols, expiration dates).
+3. It checks HTTP headers (`Content-Security-Policy`, `Strict-Transport-Security`, `X-Frame-Options`, `X-Content-Type-Options: nosniff`).
+4. It audits cookies for `HttpOnly`, `Secure`, and `SameSite` flags.
+5. It tests CORS for `Access-Control-Allow-Origin: *` with credentials.
+6. It checks for exposed files (`/.env`, `/.git/HEAD`, `/actuator`, `/swagger.json`).
+7. It reports findings mapped to **NIST SP 800-53**, **ISO 27001**, and **PCI-DSS v4.0**.
 
-```yaml
-read:
-  - .secskill/AGENT_CONTEXT.md
+---
+
+#### 3. Autonomous Verified Vulnerability Remediation
+AI agents often introduce new bugs or ineffective regex filters while trying to fix vulnerabilities. SecSkill solves this with **virtual patch verification**:
+
+> **You:**  
+> *"@agent Fix finding CWE-89 in app/users.py, and verify that your patch completely resolves the issue with zero regressions."*
+
+**What the AI Agent does:**
+1. The AI drafts a remediation (e.g. converting string formatting to parameterized queries).
+2. Before modifying your file, it calls `secskill_verify_patch(file_path="app/users.py", proposed_patch=...)`.
+3. SecSkill tests the patch in an isolated sandbox, re-runs static analysis, and verifies:
+   - Original vulnerability is neutralized (`PASS`).
+   - No new security flaws (like `eval` or shell injection) were introduced (`0 regressions`).
+4. The AI only presents you with the change once it is mathematically verified.
+
+---
+
+#### 4. Instant Security Check on New Code While Typing
+Double-check any newly created function, route handler, or file before saving:
+
+> **You:**  
+> *"@agent I just wrote this file upload endpoint in routes/upload.js. Check it with SecSkill for path traversal, arbitrary file upload, and size limits."*
+
+**What the AI Agent does:**
+1. The AI evaluates the file against SecSkill's language-specific rules (`javascript.yaml`).
+2. It flags if `path.join(UPLOAD_DIR, req.body.filename)` allows `../` directory traversal (CWE-22).
+3. It recommends safe path canonicalization with `path.resolve` boundary verification.
+
+---
+
+#### 5. Auditing AI Agents, MCP Servers, and Prompts
+If your project builds AI agents or MCP servers, audit them against the **OWASP Top 10 for LLM Applications (2025)**:
+
+> **You:**  
+> *"@agent Audit our AI agent tools and system prompts for prompt injection risks and excessive permissions."*
+
+**What the AI Agent does:**
+1. The AI calls `secskill_audit_agent(".")`.
+2. It flags prompts lacking isolation delimiters (CWE-74 / LLM01 Prompt Injection).
+3. It alerts if tools expose destructive capabilities (raw shell execution, unconstrained file deletion).
+4. It provides a calculated **Trust Index Score (0-100)** and letter grade.
+
+---
+
+### 🗣️ Natural Language Trigger Phrases
+
+Your AI assistant automatically activates SecSkill whenever you use natural phrases like:
+
+| Developer Intent | Sample Conversational Prompts |
+| :--- | :--- |
+| **Code Review** | • *"Review this file for security before I commit."*<br/>• *"Scan our auth module for SQLi, XSS, or hardcoded API keys."*<br/>• *"Is this code safe against OWASP Top 10 vulnerabilities?"* |
+| **Website Audit** | • *"Check https://example.com for missing security headers or SSL issues."*<br/>• *"Audit our staging API for CORS misconfiguration or cookie leaks."* |
+| **Vulnerability Fix** | • *"Explain finding CWE-78 and show a verified patch."*<br/>• *"Fix this vulnerability and verify it with SecSkill."* |
+| **AI Architecture** | • *"Audit our MCP server and tool definitions for prompt injection."*<br/>• *"Check if our system prompt is vulnerable to jailbreaks."* |
+
+---
+
+## 🔌 Model Context Protocol (MCP) Server
+
+SecSkill implements the **open standard MCP JSON-RPC 2.0 protocol** (`2024-11-05`), functioning as the universal bridge between AI models and security analysis tools:
+
+```
+┌────────────────────────────────────────────────────────┐
+│  Host AI Agents (Cursor, Claude, Antigravity, Codex)   │
+└───────────────────────────┬────────────────────────────┘
+                            │ Standard JSON-RPC over stdio
+┌───────────────────────────▼────────────────────────────┐
+│                  SecSkill MCP Server                   │
+├────────────────────────────────────────────────────────┤
+│ • secskill_scan         • secskill_verify_patch        │
+│ • secskill_scan_url     • secskill_audit_agent         │
+│ • secskill_explain                                     │
+└────────────────────────────────────────────────────────┘
 ```
 
-Or run directly with:
+### Exposed MCP Tools Catalog:
+1. `secskill_scan`: Scans codebase, directories, git diffs, or specific files for vulnerabilities.
+2. `secskill_scan_url`: Audits live websites/APIs for TLS, security headers, CORS, cookies, and sensitive exposure.
+3. `secskill_verify_patch`: Safely tests proposed code in a virtual sandbox, comparing baseline findings against patched findings to verify remediation with **zero regressions**.
+4. `secskill_audit_agent`: Audits AI agent prompts, tool definitions, and MCP servers for OWASP LLM vulnerabilities.
+5. `secskill_explain`: Returns deep attack path simulations, technical impact, and international compliance remediation advice for any CWE or OWASP category.
+
+---
+
+## ✨ Key Features
+
+### 1. 🌐 Live Website & Web Application DAST (`secskill scan-url`)
+Audit live URLs, staging environments, and production APIs without installing agents on the server:
+- **Transport Layer & TLS/SSL:** Checks TLS versions (flags deprecated TLS 1.0/1.1), verifies SSL certificates, and alerts if certs expire within 14 days.
+- **HTTP Security Headers:** Validates `Content-Security-Policy` (CSP), `Strict-Transport-Security` (HSTS), `X-Frame-Options` (Clickjacking), `X-Content-Type-Options: nosniff`, and technology banners in `Server` / `X-Powered-By`.
+- **Cookie Security:** Audits `Set-Cookie` headers for missing `HttpOnly`, missing `Secure`, or missing `SameSite` flags.
+- **CORS Misconfiguration:** Detects insecure `Access-Control-Allow-Origin: *` with credentials or unvalidated reflection of untrusted origins.
+- **Sensitive Path Probing:** Detects publicly exposed files (`/.env`, `/.git/HEAD`, `/actuator/health`, `/swagger.json`, `/openapi.json`).
+
 ```bash
-aider --read .secskill/AGENT_CONTEXT.md src/api/views.py
-```
-
-</details>
-
----
-
-<details>
-<summary>
-<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:6px"><rect width="24" height="24" rx="6" fill="#1e3a5f"/><path d="M6 8h12M6 12h8M6 16h10" stroke="#4fc3f7" stroke-width="2" stroke-linecap="round"/></svg>
-<b>Continue.dev, OpenHands & Zed</b>
-</summary>
-
-### Continue.dev (`~/.continue/config.json`):
-```json
-{
-  "slashCommands": [
-    {
-      "name": "secskill",
-      "description": "Run SecSkill security scan",
-      "run": "secskill scan {{{ input }}} --format markdown"
-    }
-  ]
-}
-```
-
-### OpenHands (`.openhands/microagents/secskill.md`):
-Configure triggers for security scans to invoke `secskill scan <path>`.
-
-### Zed Editor (`.zed/settings.json`):
-Add assistant rules directing Zed to invoke `secskill scan <path> --format markdown`.
-
-</details>
-
----
-
-## 📋 CLI Reference
-
-```
-secskill <command> [options]
-```
-
-### Core Commands
-
-| Command | Description |
-|---|---|
-| `scan` | Scan codebases, files, or git diffs for security vulnerabilities |
-| `explain` | Display detailed CWE/OWASP threat analysis and PoC simulations |
-| `fix` | Generate and apply human-in-the-loop remediation diffs |
-| `watch` | Monitor files in real time for leaked tokens and `.env` credentials |
-| `duel` | Autonomous AI Red Team vs. Blue Team terminal combat arena |
-| `audit-agent` | Audit AI Agents, MCP server configs, and Prompt architectures |
-| `graph` | Generate interactive source-to-sink Attack Path dataflow graphs |
-| `simulate` | Execute static proof-of-concept attack simulations |
-| `init` | Scaffold SecSkill configs, agent rules, and CI workflows |
-| `version` | Display current installed version |
-
-### Command Options
-
-```
-scan:
-  <path>                 Target file or directory (default: .)
-  --format, -f           Output format: console | sarif | json | markdown
-  --output, -o           Output file path
-  --diff <branch>        Git branch/commit to diff against (e.g. main)
-  --file <path>          Scan a specific single file
-  --llm                  Enable LLM contextual triage
-  --provider <name>      LLM Provider: ollama | openai | anthropic
-  --consent              Allow external queries for dependency audits (OSV)
-  --scope <scope>        Scope: all | changed-files
-
-fix:
-  --finding, -f <id>     Finding ID or CWE to remediate (e.g. CWE-89 or F-1001)
-  --dry-run              Show unified diff preview without modifying files
-
-graph:
-  <path>                 Codebase directory or file to trace
-  --format, -f           Format: terminal | mermaid | html
-  --output, -o           Save diagram to file
-  --open                 Open generated HTML diagram directly in browser
-
-watch:
-  <path>                 Directory to watch (default: .)
-  --notify / --no-notify Desktop popup notifications
-  --sound / --no-sound   Audio chime on leak detection
-  --interval <seconds>   Polling interval (default: 0.5s)
-
-duel:
-  <target>               Target file, code snippet, or scenario (sqli, cmdi, xss, path-traversal)
-  --rounds, -r <n>       Maximum duel engagement rounds (default: 4)
-  --red-model <name>     Local LLM model for Red Team attacker (default: codellama)
-  --blue-model <name>    Local LLM model for Blue Team defender (default: codellama)
-  --provider, -p <name>  LLM Provider: auto | ollama | openai | anthropic | simulate
-  --output, -o <path>    Save verified hardened code to specific file path
-  --apply                Automatically overwrite target file with hardened code (.bak created)
-  --delay <seconds>      Turn delay in seconds for terminal viewing (default: 1.0s)
-
-audit-agent:
-  <path>                 Target directory, agent file, or MCP config (default: .)
-  --format, -f           Format: console | sarif | json | html | markdown (default: console)
-  --output, -o           Save audit report to file
-  --open                 Open interactive Cyberpunk HTML dashboard in browser
-  --min-severity         Filter threshold: CRITICAL | HIGH | MEDIUM | LOW (default: LOW)
+secskill scan-url https://example.com
+secskill scan-url https://example.com --format sarif -o web_results.sarif
 ```
 
 ---
 
-## 🔄 CI/CD & GitHub Code Scanning
+### 2. 💻 Deterministic SAST & Data-Flow Taint Tracking
+- **Multi-Language Support:** Python (AST + regex rules), JavaScript/TypeScript, Java, Go, Rust, and configuration files.
+- **Taint Tracking:** Tracks untrusted sources (`request.args`, `req.body`, cookies, env vars) to dangerous sinks (`cursor.execute`, `subprocess`, `innerHTML`, `open`, `pickle.loads`).
+- **Secret Detection:** Combines high-entropy Shannon entropy checks with 30+ regex signatures (AWS, GitHub tokens, OpenAI keys, JWTs, GCP, private keys) with **mandatory output redaction** (`AKIA...XYZ`).
+- **Software Composition Analysis (SCA):** Scans `requirements.txt`, `package.json`, and lockfiles against Google OSV and local high-severity CVE databases.
 
-### GitHub Actions Workflow
+```bash
+secskill scan .
+secskill scan --diff main
+secskill scan --file app/auth.py
+```
 
-Integrate SecSkill directly into your GitHub pull request and code scanning tabs:
+---
 
+### 3. 🔄 Differential Verified Auto-Remediation
+Never guess if an AI-generated fix actually resolved the issue. SecSkill's verification engine:
+1. Scans original baseline code.
+2. Applies the proposed patch in a virtual sandbox.
+3. Re-scans the patched code.
+4. Alerts if the fix failed (`FAIL`), or if it introduced new vulnerabilities like `eval` or `shell=True` (`REGRESSION`), or verifies clean resolution (`PASS`).
+
+---
+
+### 4. ⚔️ Autonomous AI Red Team vs. Blue Team Duel (`secskill duel`)
+Pits two AI agents against each other in the terminal:
+- **Red Team:** Generates evasion payloads attempting to bypass filters.
+- **Blue Team:** Writes cryptographic parameterization and input validation.
+- The arena battles in real-time until code is verified impenetrable:
+
+```bash
+secskill duel sqli --apply
+secskill duel path-traversal -r 5 --provider ollama
+```
+
+---
+
+### 5. 🤖 AI-Agent & MCP Security Auditor (`secskill audit-agent`)
+Audits other AI agents, MCP servers, and system prompts against the **OWASP Top 10 for LLMs** and **MITRE ATLAS**:
+- Detects prompt injection vulnerabilities and lack of safety delimiters.
+- Flags over-privileged tools (arbitrary shell execution, uncontrolled file deletion).
+- Generates an interactive **Cyberpunk HTML Agent Security Dashboard**:
+
+```bash
+secskill audit-agent . --format html --open
+```
+
+---
+
+### 6. 👁️ Real-Time Secret Leak Watchdog (`secskill watch`)
+Watches your project directory in real-time. If a developer or AI assistant accidentally pastes an API key or private token into any file, SecSkill immediately fires a native **desktop toast notification** and audio chime:
+
+```bash
+secskill watch ./src
+```
+
+---
+
+### 7. 📊 Visual Attack Path Dataflow Graphing (`secskill graph`)
+Visualizes the exact source-to-sink journey of a vulnerability:
+- Terminal ASCII flow rendering.
+- Markdown / GitHub Mermaid diagrams (`flowchart LR`).
+- Standalone Cyberpunk HTML attack path graph.
+
+```bash
+secskill graph . --format html --open
+secskill graph . --format mermaid
+```
+
+---
+
+## 📖 CLI Command Reference
+
+| Command | Description | Example |
+| :--- | :--- | :--- |
+| `secskill scan [path]` | Run SAST/SCA security scan on codebase, file, or git diff | `secskill scan . --diff main` |
+| `secskill scan-url <url>` | Audit live website or API for TLS, headers, CORS, cookies | `secskill scan-url https://example.com` |
+| `secskill mcp` | Launch Model Context Protocol server over stdio | `secskill mcp` |
+| `secskill init` | Initialize agent skills, rules, and CI workflows | `secskill init --agent all` |
+| `secskill explain` | Deep-dive explanation and attack simulation for finding/CWE | `secskill explain --finding CWE-89` |
+| `secskill fix` | Generate or preview remediation diff for finding | `secskill fix --finding F-1001 --dry-run` |
+| `secskill watch [path]` | Real-time secret leak watcher with desktop alerts | `secskill watch ./src` |
+| `secskill simulate <id>`| Simulate exploit payload execution vs fixed code | `secskill simulate sqli` |
+| `secskill graph [path]` | Render visual attack path dataflow diagrams | `secskill graph . --format html --open` |
+| `secskill audit-agent` | Audit AI agents, prompts, and MCP configurations | `secskill audit-agent . --format html` |
+| `secskill duel <target>`| Autonomous AI Red vs. Blue code hardening battle | `secskill duel sqli --apply` |
+| `secskill version` | Display SecSkill version | `secskill version` |
+
+---
+
+## 🏛️ International Security Standards Matrix
+
+Every finding generated by SecSkill carries full bidirectional traceability to international standards:
+
+| Framework / Standard | Version | Coverage & Mapping in SecSkill |
+| :--- | :--- | :--- |
+| **OWASP Top 10** | 2021 | Mapped to `A01:2021` through `A10:2021` on all source code and website findings. |
+| **OWASP API Security Top 10** | 2023 | Specialized API checks for BOLA (`API1:2023`), Broken Auth (`API2:2023`), and SSRF (`API7:2023`). |
+| **OWASP Top 10 for LLMs** | 2025 | Mapped in `secskill audit-agent` (LLM01 Prompt Injection, LLM02 Sensitive Disclosure, LLM07 Insecure Plugin Design). |
+| **MITRE CWE / SANS Top 25** | v4.14 | Exact CWE ID assigned to every finding (`CWE-89`, `CWE-78`, `CWE-79`, `CWE-319`, `CWE-1021`, etc.). |
+| **NIST SP 800-218 (SSDF)** | v1.1 | Practice mapping: `PO` (Prepare Org), `PS` (Protect Software), `PW` (Produce Well-Secured Software), `RV` (Respond to Vulns). |
+| **NIST SP 800-53 Rev 5** | Security Controls | Controls mapping: `SC-8` (Transmission Confidentiality), `SI-10` (Input Validation), `AC-3` (Access Enforcement). |
+| **ISO/IEC 27001:2022** | Annex A.8 | Controls: `A.8.20` (Network Security), `A.8.24` (Cryptography), `A.8.26` (App Security), `A.8.28` (Secure Coding). |
+| **PCI-DSS** | v4.0 | Requirement 6: `6.2` (Software Development), `6.3` (Identify & Mitigate Vulns), `6.4` (Protect Web Applications). |
+| **OASIS SARIF** | v2.1.0 | Full native SARIF export for GitHub Code Scanning and GitLab SAST. |
+
+---
+
+## 🐍 Python SDK / Programmatic API
+
+SecSkill can be integrated directly into custom Python agents, scripts, or test pipelines via `SecSkillAgentSkill`:
+
+```python
+from secskill.agent_skill import SecSkillAgentSkill
+
+# 1. Initialize skill
+skill = SecSkillAgentSkill(target_dir=".")
+
+# 2. Run source code security scan
+findings = skill.run_security_scan("src/api/users.py")
+for f in findings:
+    print(f"[{f['severity']}] {f['title']} ({f['cwe_id']}) at line {f['line_number']}")
+
+# 3. Audit a live website or API (DAST)
+web_report = skill.scan_url("https://example.com", check_sensitive_paths=True)
+print(f"Status: {web_report['status_code']} | Findings: {len(web_report['findings'])}")
+
+# 4. Verify a proposed remediation patch (with differential regression detection)
+verification = skill.verify_remediation(
+    file_path="src/api/users.py",
+    proposed_patch='cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))',
+    original_code='cursor.execute(f"SELECT * FROM users WHERE id = {user_id}")'
+)
+print(f"Verification Verdict: {verification['status']} - {verification['message']}")
+# Output: PASS - Remediation successfully verified. 1 finding(s) neutralized with 0 regressions.
+
+# 5. Audit AI Agent prompts & MCP configs
+agent_audit = skill.audit_agent(".")
+print(f"Trust Index: {agent_audit['security_score']}/100 (Grade {agent_audit['grade']})")
+```
+
+---
+
+## ⚙️ The 8-Stage Review Pipeline
+
+When invoked, SecSkill executes an 8-stage verification pipeline:
+
+```
+[Stage 0: Scope & Consent] ──> [Stage 1: Repo Indexing] ──> [Stage 2: Parallel Scan]
+                                                                     │
+[Stage 5: Validation Filter] <── [Stage 4: LLM Review] <── [Stage 3: Normalize]
+       │
+       └──> [Stage 6: Reporting] ──> [Stage 7: Remediate & Re-scan]
+```
+
+1. **Stage 0: Scope & Consent:** Determine target (`.`, git diff, file, or URL) and enforce local privacy boundaries.
+2. **Stage 1: Repo Indexing:** Index entry points, routing tables, auth middleware, and dependency lockfiles.
+3. **Stage 2: Parallel Scanning:** Executes AST analyzers, secret entropy checks, dependency CVE lookups, and DAST probes.
+4. **Stage 3: Normalize:** Normalizes findings into the Unified Finding Schema with CWE, OWASP, and CVSS severity.
+5. **Stage 4: LLM Contextual Review:** (Optional `--llm`) Evaluates code context to eliminate false positives.
+6. **Stage 5: Validation Filter:** Validates reachability and respects `# secskill:ignore` comments.
+7. **Stage 6: Multi-Format Reporting:** Emits Console tables, SARIF 2.1.0, JSON, Markdown, or HTML dataflow graphs.
+8. **Stage 7: Remediate & Re-scan:** Generates verified patches and verifies zero regressions.
+
+---
+
+## 🛠️ CI/CD & GitHub Code Scanning Integration
+
+SecSkill integrates seamlessly with GitHub Actions to publish findings directly into the **GitHub Security Tab**:
+
+`.github/workflows/secskill.yml`:
 ```yaml
-# .github/workflows/secskill.yml
 name: SecSkill Security Scan
 
 on:
-  push:
-    branches: [main]
   pull_request:
+    branches: [main]
+  push:
     branches: [main]
 
 jobs:
@@ -871,7 +568,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install SecSkill
-        run: pip install .
+        run: pip install secskill
 
       - name: Run SecSkill Scan
         run: secskill scan . --format sarif --output secskill.sarif
@@ -883,165 +580,23 @@ jobs:
           sarif_file: secskill.sarif
 ```
 
-### Pre-commit Hook
-
-```yaml
-# .pre-commit-config.yaml
-repos:
-  - repo: local
-    hooks:
-      - id: secskill
-        name: SecSkill Security Scan
-        entry: secskill scan
-        args: [--fail-on, high, --format, console]
-        language: system
-        types: [python]
-        pass_filenames: true
-```
-
----
-
-## 🏗️ Architecture
-
-SecSkill processes source code through a modular 8-stage pipeline:
-
-```mermaid
-graph TD
-    A[📂 Source Files] --> B[🔍 Stage 1: AST Parser\nDeterministic parse tree extraction]
-    B --> C[🌊 Stage 2: Taint Tracer\nData flow graph construction]
-    C --> D[🎯 Stage 3: Rule Matcher\nOWASP / CWE / NIST pattern matching]
-    D --> E[🤖 Stage 4: LLM Triage\nOllama / OpenAI / Anthropic validation]
-    E --> F[🗺️ Stage 5: Attack Grapher\nSource-to-sink path reachability]
-    F --> G[🛠️ Stage 6: Remediation Engine\nUnified patch generation]
-    G --> H[📊 Stage 7: Report Builder\nSARIF / HTML / JSON / Markdown]
-    H --> I[💾 Stage 8: Output Delivery\nFiles, Console, or IDE UI]
-
-    style A fill:#1a2332,stroke:#00ff88,color:#fff
-    style E fill:#1a2332,stroke:#3b82f6,color:#fff
-    style I fill:#1a2332,stroke:#00ff88,color:#fff
-```
-
-### Core Components
-
-| Component | Technology | Role |
-|---|---|---|
-| **AST Engine** | Python `ast` module | Deterministic syntax tree extraction |
-| **Taint Tracer** | Custom Data Flow Graph | Traces untrusted sources to sensitive sinks |
-| **Rule Engine** | YAML-defined rules | Pattern matching across OWASP, CWE, and SSDF |
-| **LLM Adapter** | Ollama / OpenAI / Anthropic | Contextual validation and noise reduction |
-| **Attack Grapher** | NetworkX / Mermaid | Interactive visual dataflow representations |
-| **Remediation Engine** | Python Diff / AST Rewriter | Generates safe, human-reviewed patches |
-
----
-
-## 📈 Benchmarks
-
-> Tested on a 50,000-line Python codebase (Django + FastAPI mixed), Apple M3 Pro, 36 GB RAM.
-
-| Scan Mode | Scan Time | Candidate Findings | Confirmed Vulnerabilities | False Positive Rate |
-|---|---|---|---|---|
-| **AST-only** | 4.2s | 94 | 11 | ~40% |
-| **AST + Local LLM (Ollama / codellama)** | 38s | 11 | 11 | **0.0%** |
-| **AST + GPT-4o** | 22s | 9 | 9 | **0.0%** |
-| **AST + Claude Sonnet** | 19s | 10 | 10 | **0.0%** |
-
----
-
-## 🔒 Privacy & Security Guarantees
-
-<table>
-<tr>
-<td>
-
-**🛡️ Local-First Execution**  
-All analysis runs locally on your workstation. Zero code is sent to external servers unless you explicitly specify an external LLM provider.
-
-</td>
-<td>
-
-**🔌 100% Air-Gap Compatible**  
-Combine deterministic AST analysis with local Ollama models for completely offline, defense-grade secure environments.
-
-</td>
-</tr>
-<tr>
-<td>
-
-**🚫 Zero Telemetry**  
-SecSkill collects no analytics, telemetry, crash dumps, or usage tracking. Your source code and findings remain private.
-
-</td>
-<td>
-
-**✋ Human Approval Enforced**  
-Automated remediation for Critical and High severity findings never writes changes directly without human confirmation.
-
-</td>
-</tr>
-</table>
-
----
-
-## 📚 Documentation Index
-
-| Document | Description |
-|---|---|
-| [Getting Started](docs/getting-started.md) | Initial setup, configuration, and first scan |
-| [Configuration Reference](docs/configuration.md) | `.secskill/config.yml` full schema |
-| [Rule Authoring Guide](docs/rules.md) | Creating custom YAML security rules |
-| [LLM Triage Setup](docs/llm-triage.md) | Setting up Ollama, OpenAI, or Anthropic backends |
-| [SARIF Output Guide](docs/sarif.md) | SARIF 2.1.0 schema and GitHub Security integration |
-| [CI/CD Integration](docs/cicd.md) | GitHub Actions, GitLab CI, and Jenkins integration |
-| [Privacy Guide](docs/privacy.md) | Air-gap mode and security policies |
-| [Architecture Deep Dive](docs/architecture.md) | Internal engine mechanics and taint analysis |
-| [AI Agent Skills](secskill/SKILL.md) | Google Antigravity & agent skill specification |
-| [Changelog](CHANGELOG.md) | Version history and release notes |
-
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please follow these guidelines:
+We welcome community contributions, custom rule packs, and framework additions!
 
-```bash
-# 1. Fork & clone repository
-git clone https://github.com/anasahmed67/sec-skill.git
-cd sec-skill
+1. Fork the repository.
+2. Create a feature branch: `git checkout -b feature/awesome-rule`.
+3. Add tests in `tests/`.
+4. Ensure all tests pass: `pytest`.
+5. Format code: `ruff check . --fix`.
+6. Submit a Pull Request.
 
-# 2. Setup virtual environment
-python -m venv .venv
-# On Windows: .venv\Scripts\activate
-# On Linux/macOS: source .venv/bin/activate
-
-# 3. Install in development mode with test extras
-pip install -e ".[dev,test,docs]"
-
-# 4. Run test suite
-pytest tests/ -v
-
-# 5. Format & Lint
-ruff check . && ruff format .
-
-# 6. Dogfooding: scan SecSkill itself
-secskill scan secskill/ --format markdown
-```
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for full pull request guidelines.
+Please see [CONTRIBUTING.md](CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for details.
 
 ---
 
-<div align="center">
+## 📄 License
 
-<svg xmlns="http://www.w3.org/2000/svg" width="600" height="60" viewBox="0 0 600 60">
-  <rect width="600" height="60" rx="10" fill="#0d1117"/>
-  <text x="300" y="22" text-anchor="middle" font-family="'Courier New',monospace" font-size="13" fill="#8b9ab0">
-    Built with ❤️ for the security and AI engineering community
-  </text>
-  <text x="300" y="42" text-anchor="middle" font-family="'Courier New',monospace" font-size="12" fill="#4a5568">
-    Apache 2.0 Licensed · © SecSkill Contributors
-  </text>
-</svg>
-
-**[⬆ Back to top](#)**
-
-</div>
+SecSkill is open-source software licensed under the [Apache License 2.0](LICENSE).

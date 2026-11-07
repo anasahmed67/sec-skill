@@ -1,12 +1,276 @@
 rules:
-  - id: OWASP-A01-BROKEN-ACCESS
-    name: Broken Access Control
-    severity: HIGH
-    cwe: CWE-284
-    description: Missing authorization checks or insecure direct object references.
+  - id: "OWASP-A01-BROKEN-ACCESS"
+    title: "Broken Access Control - Path Traversal or Missing Authorization"
+    cwe: "CWE-22"
+    owasp: "A01:2021-Broken Access Control"
+    ssdf: "PW.5.1"
+    severity: "HIGH"
+    confidence: 0.88
+    languages:
+      - python
+      - javascript
+      - java
+    patterns:
+      - "open\\s*\\(\\s*(?:request\\.|req\\.|params\\[|os\\.path\\.join\\([^)]*request\\.)"
+      - "fs\\.readFile(?:Sync)?\\s*\\(\\s*(?:req\\.params|req\\.query|req\\.body|path\\.join\\([^)]*req\\.)"
+      - "new\\s+File\\s*\\(\\s*(?:request\\.getParameter|params\\[)"
+      - "res\\.redirect\\s*\\(\\s*(?:req\\.query|req\\.body|req\\.params)"
+      - "@app\\.route\\([^)]*\\)\\s*\\ndef\\s+(?:admin_|delete_|manage_)[^)]*\\):"
+    remediation:
+      description: "Enforce strict authorization checks (role/tenant checks) on every endpoint and canonicalize file paths using os.path.abspath / path.resolve to verify directory boundaries."
+      vulnerable_example: |
+        filepath = os.path.join(UPLOAD_DIR, request.args.get("file"))
+        with open(filepath, "r") as f:
+            return f.read()
+      secure_example: |
+        filename = secure_filename(request.args.get("file"))
+        filepath = os.path.abspath(os.path.join(UPLOAD_DIR, filename))
+        if not filepath.startswith(UPLOAD_DIR):
+            raise PermissionError("Access denied")
+    references:
+      - "https://owasp.org/Top10/A01_2021-Broken_Access_Control/"
+      - "https://cwe.mitre.org/data/definitions/22.html"
 
-  - id: OWASP-A03-INJECTION
-    name: Injection Flaws
-    severity: CRITICAL
-    cwe: CWE-89
-    description: SQL, Command, or NoSQL injection vulnerabilities.
+  - id: "OWASP-A02-CRYPTO-FAILURES"
+    title: "Cryptographic Failures - Broken or Weak Cryptographic Primitives"
+    cwe: "CWE-327"
+    owasp: "A02:2021-Cryptographic Failures"
+    ssdf: "PW.5.1"
+    severity: "HIGH"
+    confidence: 0.90
+    languages:
+      - python
+      - javascript
+      - java
+    patterns:
+      - "hashlib\\.(?:md5|sha1)\\s*\\("
+      - "crypto\\.createHash\\s*\\(\\s*[\"'](?:md5|sha1)[\"']"
+      - "MessageDigest\\.getInstance\\s*\\(\\s*[\"'](?:MD5|SHA-1)[\"']"
+      - "AES\\.new\\([^,]+,\\s*AES\\.MODE_ECB\\)"
+      - "(?:random\\.random|random\\.randint|random\\.choice)\\s*\\(.*(?:token|secret|key|nonce|auth)"
+      - "Math\\.random\\(\\).*?(?:token|secret|key|auth|password)"
+    remediation:
+      description: "Use modern cryptographic primitives: SHA-256/SHA-512 for integrity, Argon2id or bcrypt for passwords, AES-GCM for encryption, and CSPRNGs (secrets module or crypto.randomBytes) for tokens."
+      vulnerable_example: |
+        import hashlib, random
+        token = str(random.random())
+        password_hash = hashlib.md5(password.encode()).hexdigest()
+      secure_example: |
+        import secrets, bcrypt
+        token = secrets.token_urlsafe(32)
+        password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+    references:
+      - "https://owasp.org/Top10/A02_2021-Cryptographic_Failures/"
+      - "https://cwe.mitre.org/data/definitions/327.html"
+
+  - id: "OWASP-A03-INJECTION"
+    title: "Injection Flaw - Untrusted Data reaching SQL, Command, or Code Interpreter"
+    cwe: "CWE-89"
+    owasp: "A03:2021-Injection"
+    ssdf: "PW.5.1"
+    severity: "CRITICAL"
+    confidence: 0.93
+    languages:
+      - python
+      - javascript
+      - java
+    patterns:
+      - "cursor\\.execute\\s*\\(\\s*f[\"']"
+      - "cursor\\.execute\\s*\\([^\\n)]*\\%"
+      - "subprocess\\.(?:run|call|check_call|Popen)\\s*\\([^)]*shell\\s*=\\s*True"
+      - "child_process\\.(?:exec|execSync)\\s*\\("
+      - "eval\\s*\\(\\s*(?:request\\.|req\\.|input|params\\[)"
+      - "render_template_string\\s*\\(\\s*f?[\"'].*?(?:request|req|\\+)"
+    remediation:
+      description: "Use parameterized queries with bound placeholders for database operations, pass argument lists with shell=False for subprocess execution, and avoid eval/render_template_string on untrusted input."
+      vulnerable_example: |
+        cursor.execute(f"SELECT * FROM users WHERE username = '{username}'")
+      secure_example: |
+        cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
+    references:
+      - "https://owasp.org/Top10/A03_2021-Injection/"
+      - "https://cwe.mitre.org/data/definitions/89.html"
+
+  - id: "OWASP-A04-INSECURE-DESIGN"
+    title: "Insecure Design - Sensitive Debugging or Error Disclosure Enabled"
+    cwe: "CWE-209"
+    owasp: "A04:2021-Insecure Design"
+    ssdf: "PW.1.1"
+    severity: "MEDIUM"
+    confidence: 0.85
+    languages:
+      - python
+      - javascript
+    patterns:
+      - "app\\.run\\s*\\([^)]*debug\\s*=\\s*True"
+      - "DEBUG\\s*=\\s*True"
+      - "traceback\\.print_exc\\s*\\("
+      - "res\\.status\\(500\\)\\.send\\s*\\([^)]*(?:err\\.stack|error\\.stack)"
+    remediation:
+      description: "Disable debug modes in production environments and return generic error messages to clients while logging detailed stack traces internally to secure log systems."
+      vulnerable_example: |
+        app.run(debug=True, host="0.0.0.0")
+      secure_example: |
+        is_debug = os.getenv("FLASK_DEBUG", "0") == "1"
+        app.run(debug=is_debug)
+    references:
+      - "https://owasp.org/Top10/A04_2021-Insecure_Design/"
+      - "https://cwe.mitre.org/data/definitions/209.html"
+
+  - id: "OWASP-A05-SECURITY-MISCONFIG"
+    title: "Security Misconfiguration - Permissive CORS or Insecure Cookie Attributes"
+    cwe: "CWE-16"
+    owasp: "A05:2021-Security Misconfiguration"
+    ssdf: "PW.1.3"
+    severity: "HIGH"
+    confidence: 0.87
+    languages:
+      - python
+      - javascript
+    patterns:
+      - "Access-Control-Allow-Origin.*?[\\\"']\\*[\\\"'].*?credentials.*?true"
+      - "cors\\(\\s*\\{[^}]*origin:\\s*[\"']\\*[\"'][^}]*credentials:\\s*true"
+      - "cookie_secure\\s*=\\s*False"
+      - "cookie_httponly\\s*=\\s*False"
+      - "os\\.chmod\\s*\\([^,]+,\\s*0o?777\\)"
+    remediation:
+      description: "Configure explicit trusted origins when credentials are supported in CORS headers, ensure cookies have Secure and HttpOnly flags set, and restrict file system permissions."
+      vulnerable_example: |
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+      secure_example: |
+        origin = request.headers.get("Origin")
+        if origin in TRUSTED_ORIGINS:
+            response.headers["Access-Control-Allow-Origin"] = origin
+            response.headers["Access-Control-Allow-Credentials"] = "true"
+    references:
+      - "https://owasp.org/Top10/A05_2021-Security_Misconfiguration/"
+      - "https://cwe.mitre.org/data/definitions/16.html"
+
+  - id: "OWASP-A06-VULN-COMPONENTS"
+    title: "Vulnerable and Outdated Components - Insecure Package Ingestion"
+    cwe: "CWE-1395"
+    owasp: "A06:2021-Vulnerable and Outdated Components"
+    ssdf: "RV.1.1"
+    severity: "HIGH"
+    confidence: 0.90
+    languages:
+      - python
+      - javascript
+    patterns:
+      - "pip\\s+install\\s+--trusted-host"
+      - "pip\\s+install\\s+--no-verify"
+      - "npm\\s+install\\s+--force"
+      - "npm\\s+install\\s+--legacy-peer-deps"
+    remediation:
+      description: "Maintain pinned lockfiles (requirements.txt, package-lock.json), enforce package hash verification, and scan dependencies with SecSkill against OSV advisories."
+      vulnerable_example: |
+        pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org unverified-package
+      secure_example: |
+        pip install --require-hashes -r requirements.txt
+    references:
+      - "https://owasp.org/Top10/A06_2021-Vulnerable_and_Outdated_Components/"
+      - "https://cwe.mitre.org/data/definitions/1395.html"
+
+  - id: "OWASP-A07-AUTH-FAILURES"
+    title: "Identification and Authentication Failures - Insecure JWT or Weak Verification"
+    cwe: "CWE-287"
+    owasp: "A07:2021-Identification and Authentication Failures"
+    ssdf: "PW.5.1"
+    severity: "HIGH"
+    confidence: 0.90
+    languages:
+      - python
+      - javascript
+    patterns:
+      - "jwt\\.decode\\s*\\([^)]*verify\\s*=\\s*False"
+      - "jwt\\.decode\\s*\\([^)]*algorithms\\s*=\\s*\\[?[\"']none[\"']\\]?"
+      - "verifySignature\\s*:\\s*false"
+      - "password\\s*==\\s*(?:user\\.password|account\\.password|stored_password)"
+    remediation:
+      description: "Always verify cryptographic signatures on JWTs, disallow the 'none' algorithm, and verify passwords using constant-time comparison algorithms (e.g. bcrypt.checkpw)."
+      vulnerable_example: |
+        payload = jwt.decode(token, verify=False)
+      secure_example: |
+        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+    references:
+      - "https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/"
+      - "https://cwe.mitre.org/data/definitions/287.html"
+
+  - id: "OWASP-A08-INTEGRITY-FAILURES"
+    title: "Software and Data Integrity Failures - Insecure Deserialization"
+    cwe: "CWE-502"
+    owasp: "A08:2021-Software and Data Integrity Failures"
+    ssdf: "PW.5.1"
+    severity: "CRITICAL"
+    confidence: 0.95
+    languages:
+      - python
+      - java
+    patterns:
+      - "pickle\\.loads?\\s*\\("
+      - "_pickle\\.loads?\\s*\\("
+      - "yaml\\.load\\s*\\([^,)]*\\)(?!.*?SafeLoader)"
+      - "new\\s+ObjectInputStream\\s*\\("
+      - "XMLDecoder\\s*\\("
+    remediation:
+      description: "Never deserialize untrusted byte streams with pickle or Java ObjectInputStream. Use safe serial formats like JSON or Protocol Buffers, and use yaml.safe_load for YAML."
+      vulnerable_example: |
+        data = pickle.loads(request.data)
+      secure_example: |
+        data = json.loads(request.data)
+    references:
+      - "https://owasp.org/Top10/A08_2021-Software_and_Data_Integrity_Failures/"
+      - "https://cwe.mitre.org/data/definitions/502.html"
+
+  - id: "OWASP-A09-LOGGING-FAILURES"
+    title: "Security Logging and Monitoring Failures - Sensitive Data in Logs"
+    cwe: "CWE-532"
+    owasp: "A09:2021-Security Logging and Monitoring Failures"
+    ssdf: "PS.1.1"
+    severity: "MEDIUM"
+    confidence: 0.85
+    languages:
+      - python
+      - javascript
+      - java
+    patterns:
+      - "(?:logger|logging)\\.(?:info|debug|warn|error)\\s*\\([^)]*?(?:password|passwd|api_key|secret|token|bearer|card_number)"
+      - "console\\.(?:log|info|warn|error)\\s*\\([^)]*?(?:password|token|secret|apiKey)"
+      - "System\\.out\\.println\\s*\\([^)]*?(?:password|token|secret)"
+    remediation:
+      description: "Sanitize and mask sensitive values (passwords, tokens, credit card numbers) before recording log messages to prevent credential leakage into log monitoring pipelines."
+      vulnerable_example: |
+        logger.info(f"User login attempt: {username} with password: {password}")
+      secure_example: |
+        logger.info(f"User login attempt: {username}")
+    references:
+      - "https://owasp.org/Top10/A09_2021-Security_Logging_and_Monitoring_Failures/"
+      - "https://cwe.mitre.org/data/definitions/532.html"
+
+  - id: "OWASP-A10-SSRF"
+    title: "Server-Side Request Forgery (SSRF) - Unvalidated External Request"
+    cwe: "CWE-918"
+    owasp: "A10:2021-Server-Side Request Forgery"
+    ssdf: "PW.5.1"
+    severity: "HIGH"
+    confidence: 0.88
+    languages:
+      - python
+      - javascript
+    patterns:
+      - "requests\\.(?:get|post|put|delete|head)\\s*\\(\\s*(?:request\\.|req\\.|params\\[|url)"
+      - "urllib\\.request\\.urlopen\\s*\\(\\s*(?:request\\.|req\\.|params\\[)"
+      - "axios\\.(?:get|post)\\s*\\(\\s*(?:req\\.query|req\\.body|params\\.)"
+      - "fetch\\s*\\(\\s*(?:req\\.query|req\\.body|params\\.)"
+    remediation:
+      description: "Validate and restrict target URLs against an explicit strict allowlist of domains and block internal/private IP ranges (127.0.0.1, 169.254.169.254, RFC 1918 addresses)."
+      vulnerable_example: |
+        target = request.args.get("webhook_url")
+        resp = requests.get(target)
+      secure_example: |
+        target = validate_public_url(request.args.get("webhook_url"), ALLOWED_DOMAINS)
+        resp = requests.get(target)
+    references:
+      - "https://owasp.org/Top10/A10_2021-Server-Side_Request_Forgery_%28SSRF%29/"
+      - "https://cwe.mitre.org/data/definitions/918.html"

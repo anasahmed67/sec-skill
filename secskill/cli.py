@@ -1,6 +1,7 @@
 """Typer CLI application for SecSkill."""
 import sys
 import json
+from datetime import datetime
 from typing import Optional
 from pathlib import Path
 import typer
@@ -14,6 +15,8 @@ from secskill.reporting.console_report import ConsoleReporter
 from secskill.reporting.sarif_report import SarifReporter
 from secskill.reporting.json_report import JsonReporter
 from secskill.reporting.markdown_report import MarkdownReporter
+from secskill.installer import AgentInstaller
+from secskill.analyzers.web_scan import WebSecurityScanner, WebScanReport
 
 app = typer.Typer(help="SecSkill - AI-enhanced Security Scanner & Agent Skill")
 console = Console()
@@ -136,54 +139,191 @@ def scan(
 
 @app.command()
 def init(
-    target: Path = typer.Option(Path("."), "--target", "-t", help="Target project root directory")
+    target: Path = typer.Option(Path("."), "--target", "-t", help="Target project root directory"),
+    agent: str = typer.Option("all", "--agent", "-a", help="Agent target: all, antigravity, claude, cursor, codex"),
 ):
-    """Initialize SecSkill agent rules and CI workflows in target project."""
+    """Initialize SecSkill agent skills, rules, and MCP servers across AI coding agents."""
     target_dir = Path(target).resolve()
+    target_dir.mkdir(parents=True, exist_ok=True)
+    
+    # 1. Write legacy .secskill files for backward compatibility
     secskill_dir = target_dir / ".secskill"
     secskill_dir.mkdir(parents=True, exist_ok=True)
-
-    # 1. Write Claude Code agent files
     (secskill_dir / "AGENT.md").write_text(AGENT_MD_TEMPLATE, encoding="utf-8")
     (secskill_dir / "rules.md").write_text(RULES_MD_TEMPLATE, encoding="utf-8")
     (secskill_dir / "policies.md").write_text(POLICIES_MD_TEMPLATE, encoding="utf-8")
-
-    # 2. Write Cursor rules
     (target_dir / ".cursorrules").write_text(CURSOR_RULES_TEMPLATE, encoding="utf-8")
 
-    # 3. Write GitHub Actions workflow
     workflows_dir = target_dir / ".github" / "workflows"
     workflows_dir.mkdir(parents=True, exist_ok=True)
     (workflows_dir / "secskill.yml").write_text(WORKFLOW_TEMPLATE, encoding="utf-8")
 
+    # 2. Install requested agent configurations
+    installed_items = []
+    agent_clean = agent.lower().strip()
+    if agent_clean == "all":
+        results = AgentInstaller.install_all(target_dir)
+        for files in results.values():
+            installed_items.extend(files)
+    elif agent_clean == "antigravity":
+        installed_items.extend(AgentInstaller.install_antigravity(target_dir))
+    elif agent_clean == "claude":
+        installed_items.extend(AgentInstaller.install_claude(target_dir))
+    elif agent_clean == "cursor":
+        installed_items.extend(AgentInstaller.install_cursor(target_dir))
+    elif agent_clean == "codex":
+        installed_items.extend(AgentInstaller.install_codex(target_dir))
+    else:
+        console.print(f"[yellow]Unknown agent target '{agent}'. Installed standard configs.[/yellow]")
+
     console.print(Panel(
-        f"[bold green]SecSkill Initialized Successfully![/bold green]\n\n"
-        f"✓ Created [cyan].secskill/AGENT.md[/cyan], [cyan]rules.md[/cyan], [cyan]policies.md[/cyan]\n"
-        f"✓ Created [cyan].cursorrules[/cyan]\n"
-        f"✓ Created [cyan].github/workflows/secskill.yml[/cyan]",
-        title="SecSkill Setup"
+        f"[bold green]SecSkill Agent Integration Initialized Successfully![/bold green]\n\n"
+        f"✓ [cyan]Antigravity:[/cyan] .gemini/skills/secskill/SKILL.md & plugin.json\n"
+        f"✓ [cyan]Claude Code:[/cyan] .claude/skills/secskill/SKILL.md & rules.md\n"
+        f"✓ [cyan]Cursor:[/cyan] .cursor/rules/secskill.mdc & .cursor/mcp.json\n"
+        f"✓ [cyan]Codex / Generic:[/cyan] .mcp/secskill.json & AGENTS.md\n"
+        f"✓ [cyan]CI/CD:[/cyan] .github/workflows/secskill.yml",
+        title="SecSkill Omni-Agent Setup"
     ))
+
+@app.command(name="scan-url")
+def scan_url(
+    url: str = typer.Argument(..., help="Target website or API URL to audit (e.g. https://example.com)"),
+    format: str = typer.Option("console", "--format", "-f", help="Output format: console, sarif, json, markdown"),
+    output: Optional[Path] = typer.Option(None, "--output", "-o", help="Report output file path"),
+    probes: bool = typer.Option(True, "--probes/--no-probes", help="Probe for exposed files (/.env, /.git, /actuator, /swagger)"),
+    timeout: float = typer.Option(8.0, "--timeout", help="HTTP timeout in seconds"),
+):
+    """Audit live website or API against international security standards (TLS, Headers, CORS, Cookies, Exposures)."""
+    console.print(f"[bold green]Starting SecSkill Live Website Audit on:[/bold green] [cyan]{url}[/cyan]")
+    scanner = WebSecurityScanner(timeout=timeout)
+    report = scanner.scan_url(url, check_sensitive_paths=probes)
+
+    if format == "console":
+        status_color = "green" if report.status_code and report.status_code < 400 else "red"
+        status_text = f"[{status_color}]{report.status_code}[/{status_color}]" if report.status_code else "[yellow]N/A[/yellow]"
+        tls_text = report.tls_info.get("version", "N/A")
+        days_exp = report.tls_info.get("days_until_expiration", "N/A")
+
+        console.print(Panel(
+            f"[bold]Target URL:[/bold] {report.target_url}\n"
+            f"[bold]HTTP Status:[/bold] {status_text} | [bold]Final URL:[/bold] {report.final_url or url}\n"
+            f"[bold]TLS Version:[/bold] {tls_text} | [bold]Days until Cert Expiry:[/bold] {days_exp}\n"
+            f"[bold]Total Security Findings:[/bold] {len(report.findings)}",
+            title="Website Audit Overview",
+            border_style="cyan"
+        ))
+
+        if not report.findings:
+            console.print("[bold green]✓ No security misconfigurations detected on target website.[/bold green]\n")
+            return
+
+        table = Table(show_header=True, header_style="bold magenta")
+        table.add_column("Severity", style="bold", width=10)
+        table.add_column("Rule ID", style="dim", width=14)
+        table.add_column("Standard", style="yellow", width=18)
+        table.add_column("Vulnerability Title", style="white")
+        table.add_column("Remediation", style="cyan")
+
+        sev_colors = {
+            "CRITICAL": "[bold red]CRITICAL[/bold red]",
+            "HIGH": "[red]HIGH[/red]",
+            "MEDIUM": "[yellow]MEDIUM[/yellow]",
+            "LOW": "[blue]LOW[/blue]",
+            "INFO": "[dim]INFO[/dim]"
+        }
+
+        for f in report.findings:
+            sev_badge = sev_colors.get(f.severity.value, f.severity.value)
+            std_ref = f"{f.cwe_id or ''}\n{f.owasp_category.split(':')[0] if f.owasp_category else ''}"
+            table.add_row(
+                sev_badge,
+                f.rule_id,
+                std_ref,
+                f.title,
+                (f.remediation or "")[:100] + ("..." if f.remediation and len(f.remediation) > 100 else "")
+            )
+
+        console.print(table)
+        console.print("\n[bold]International Compliance Mapping:[/bold]")
+        console.print(f"- [cyan]OWASP Top 10 categories affected:[/cyan] {list(report.compliance_summary.get('frameworks', {}).get('owasp_top10', {}).keys())}")
+        console.print(f"- [cyan]NIST SP 800-53 controls:[/cyan] {list(report.compliance_summary.get('frameworks', {}).get('nist_sp_800_53', {}).keys())}")
+        console.print(f"- [cyan]ISO/IEC 27001 Annex A.8 controls:[/cyan] {list(report.compliance_summary.get('frameworks', {}).get('iso_iec_27001', {}).keys())}\n")
+
+    elif format == "json":
+        data = report.model_dump()
+        json_str = json.dumps(data, indent=2)
+        if output:
+            output.write_text(json_str, encoding="utf-8")
+            console.print(f"[bold green]✓ JSON report written to:[/bold green] [cyan]{output}[/cyan]")
+        else:
+            print(json_str)
+
+    elif format == "markdown":
+        md_lines = [
+            f"# SecSkill Live Website Audit: {report.target_url}",
+            f"- **Timestamp:** {report.timestamp}",
+            f"- **HTTP Status:** {report.status_code}",
+            f"- **TLS Version:** {report.tls_info.get('version', 'N/A')}",
+            f"- **Total Findings:** {len(report.findings)}",
+            "",
+            "## Findings",
+        ]
+        for f in report.findings:
+            md_lines.extend([
+                f"### [{f.severity.value}] {f.title} ({f.rule_id})",
+                f"- **CWE:** {f.cwe_id} | **OWASP:** {f.owasp_category}",
+                f"- **Description:** {f.description}",
+                f"- **Remediation:** {f.remediation}",
+                "",
+            ])
+        md_content = "\n".join(md_lines)
+        if output:
+            output.write_text(md_content, encoding="utf-8")
+            console.print(f"[bold green]✓ Markdown report written to:[/bold green] [cyan]{output}[/cyan]")
+        else:
+            print(md_content)
+
+    elif format == "sarif":
+        sarif_content = SarifReporter().generate(
+            report=type("ScanReportShim", (), {
+                "scan_id": f"web-scan-{datetime.now().strftime('%Y%m%d%H%M%S')}",
+                "target_path": report.target_url,
+                "timestamp": report.timestamp,
+                "findings": report.findings,
+                "summary": report.compliance_summary
+            })(),
+            output_path=output
+        )
+        if not output:
+            print(sarif_content)
+
+@app.command(name="mcp")
+def mcp():
+    """Start the Model Context Protocol (MCP) server over standard input/output (stdio)."""
+    from secskill.mcp_server import SecSkillMCPServer
+    server = SecSkillMCPServer()
+    server.run_stdio()
 
 @app.command()
 def explain(
     finding: str = typer.Option(..., "--finding", "-f", help="Finding ID or CWE to explain (e.g. CWE-89 or F-1001)")
 ):
     """Explain a specific security finding with deep MITRE/OWASP context and attack simulation."""
+    from secskill.mcp_server import SecSkillMCPServer
+    server = SecSkillMCPServer()
+    info = server._explain_query(finding)
+
     console.print(f"\n[bold cyan]=== Deep Security Context for {finding} ===[/bold cyan]\n")
-    if "89" in finding or "sqli" in finding.lower():
-        console.print("[bold red]CWE-89: SQL Injection[/bold red] (OWASP A03:2021-Injection)")
-        console.print("[bold yellow]Attack Simulation:[/bold yellow] An attacker inputs `' OR '1'='1` to alter query logic and dump data.")
-        console.print("[bold green]Remediation:[/bold green] Parameterize queries using driver placeholders (`?` or `%s`).")
-    elif "78" in finding or "cmd" in finding.lower():
-        console.print("[bold red]CWE-78: OS Command Injection[/bold red] (OWASP A03:2021-Injection)")
-        console.print("[bold yellow]Attack Simulation:[/bold yellow] Metacharacters (`; rm -rf /`) are evaluated by shell interpreter.")
-        console.print("[bold green]Remediation:[/bold green] Use argument lists with `shell=False`.")
-    elif "798" in finding or "secret" in finding.lower():
-        console.print("[bold red]CWE-798: Hardcoded Credentials[/bold red] (OWASP A02:2021-Cryptographic Failures)")
-        console.print("[bold yellow]Attack Simulation:[/bold yellow] Adversary extracts key from repo history and accesses cloud APIs.")
-        console.print("[bold green]Remediation:[/bold green] Revoke key, rotate credentials, and load from environment variables.")
+    if "cwe" in info:
+        console.print(f"[bold red]{info['cwe']}[/bold red] ({info.get('owasp', '')})")
+        console.print(f"[bold yellow]Attack Simulation:[/bold yellow] {info.get('attack_vector', '')}")
+        console.print(f"[bold green]Remediation:[/bold green] {info.get('remediation', '')}")
+        if "standards" in info:
+            stds = info["standards"]
+            console.print(f"[cyan]Standards Mapping:[/cyan] NIST: {stds.get('nist')} | ISO 27001: {stds.get('iso_27001')} | PCI-DSS: {stds.get('pci_dss')}")
     else:
-        console.print(f"Finding reference for {finding}: Consult references/taxonomy.md and references/cwe-guidance.md.")
+        console.print(info.get("message", f"Consult references/taxonomy.md and references/cwe-guidance.md for {finding}."))
 
 @app.command()
 def fix(
