@@ -40,9 +40,14 @@ reports/
 *.html
 findings.json
 findings.md
+hardened_code.py
+*.bak
 
-# AI Tool Workspace Config
+# AI Tool Workspace Config & Graphs
 .gemini/
+graphify-out/
+build_chunk_*.py
+*.log
 
 # IDEs & System
 .idea/

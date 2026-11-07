@@ -308,6 +308,113 @@ def graph(
         for f in target_findings:
             AttackPathGraph.render_terminal(f)
 
+@app.command(name="audit-agent")
+def audit_agent(
+    path: Path = typer.Argument(Path("."), help="Path to codebase, agent directory, or MCP configuration file"),
+    format: str = typer.Option("console", "--format", "-f", help="Output format: console, sarif, json, html, markdown"),
+    output: Optional[Path] = typer.Option(None, "--output", "-o", help="Report output file path"),
+    open_browser: bool = typer.Option(False, "--open", help="Open HTML report in default browser"),
+    min_severity: str = typer.Option("LOW", "--min-severity", help="Minimum severity filter (CRITICAL, HIGH, MEDIUM, LOW)"),
+):
+    """Audit AI Agents, MCP server configs, and Prompt architectures for OWASP LLM / MITRE ATLAS vulnerabilities."""
+    import webbrowser
+    import tempfile
+    from secskill.agent_audit import AgentSecurityAuditor
+    from secskill.models import Severity
+
+    auditor = AgentSecurityAuditor()
+    report = auditor.audit(str(path))
+
+    # Severity filtering if specified
+    severity_order = {Severity.CRITICAL: 4, Severity.HIGH: 3, Severity.MEDIUM: 2, Severity.LOW: 1, Severity.INFO: 0}
+    min_rank = severity_order.get(Severity(min_severity.upper()), 1)
+    report.findings = [f for f in report.findings if severity_order.get(f.severity, 0) >= min_rank]
+
+    if format == "console":
+        auditor.render_console(report)
+    elif format == "json":
+        content = auditor.export_json(report, output)
+        if not output:
+            print(content)
+        else:
+            console.print(f"[bold green]✓ Agent audit JSON report written to:[/bold green] [cyan]{output}[/cyan]")
+    elif format == "sarif":
+        content = auditor.export_sarif(report, output)
+        if not output:
+            print(content)
+        else:
+            console.print(f"[bold green]✓ Agent audit SARIF report written to:[/bold green] [cyan]{output}[/cyan]")
+    elif format == "html":
+        if output:
+            out_file = Path(output).resolve()
+        else:
+            temp_dir = Path(tempfile.gettempdir()) / "secskill"
+            temp_dir.mkdir(parents=True, exist_ok=True)
+            out_file = temp_dir / "secskill_agent_audit.html"
+        
+        auditor.export_html(report, out_file)
+        console.print(f"[bold green]✓ Interactive Agent Security Dashboard generated:[/bold green] [cyan]{out_file}[/cyan]")
+        if open_browser:
+            webbrowser.open(out_file.as_uri())
+    elif format == "markdown":
+        md_lines = [
+            f"# SecSkill AI Agent & MCP Security Audit Report",
+            f"- **Target:** `{report.target_path}`",
+            f"- **Trust Index:** {report.security_score}/100 (Grade {report.grade})",
+            f"- **Timestamp:** {report.timestamp}",
+            f"- **MCP Servers Audited:** {report.stats.mcp_servers_found}",
+            f"- **Findings:** {len(report.findings)}",
+            "",
+            "## Findings",
+        ]
+        for f in report.findings:
+            md_lines.extend([
+                f"### [{f.severity.value}] {f.title} ({f.rule_id})",
+                f"- **Location:** `{f.file_path}:{f.line_number}`",
+                f"- **OWASP LLM:** {f.owasp_llm} | **MITRE ATLAS:** {f.mitre_atlas} | **CWE:** {f.cwe_id}",
+                f"- **Description:** {f.description}",
+                f"- **Remediation:** {f.remediation}",
+                "",
+            ])
+        md_content = "\n".join(md_lines)
+        if output:
+            output.write_text(md_content, encoding="utf-8")
+            console.print(f"[bold green]✓ Markdown report written to:[/bold green] [cyan]{output}[/cyan]")
+        else:
+            print(md_content)
+    else:
+        console.print(f"[red]Error:[/red] Unknown format '{format}'")
+        raise typer.Exit(code=1)
+
+@app.command()
+def duel(
+    target: Optional[str] = typer.Argument(None, help="Target file path, vulnerable code snippet, or scenario name (sqli, cmdi, xss, path-traversal)"),
+    rounds: int = typer.Option(4, "--rounds", "-r", help="Maximum duel engagement rounds"),
+    red_model: str = typer.Option("codellama", "--red-model", help="Local LLM model for Red Team attacker"),
+    blue_model: str = typer.Option("codellama", "--blue-model", help="Local LLM model for Blue Team defender"),
+    provider: str = typer.Option("auto", "--provider", "-p", help="LLM Provider: auto, ollama, openai, anthropic, simulate"),
+    output: Optional[Path] = typer.Option(None, "--output", "-o", help="File path to save verified hardened code"),
+    apply: bool = typer.Option(False, "--apply", help="Automatically overwrite target file with verified hardened code upon victory"),
+    delay: float = typer.Option(1.0, "--delay", help="Combat delay between turns in seconds (0 for instant execution)"),
+):
+    """Autonomous AI Red Team vs. Blue Team Duel Arena: Battle in the terminal until code is impenetrable."""
+    from secskill.duel import DuelArena
+
+    arena = DuelArena(
+        target=target,
+        red_model=red_model,
+        blue_model=blue_model,
+        provider=provider,
+        max_rounds=rounds,
+        output_path=output,
+        auto_apply=apply,
+        turn_delay=delay,
+        console=console,
+    )
+    result = arena.run()
+    if not result.is_hardened and result.winner == "RED":
+        raise typer.Exit(code=1)
+
 @app.command()
 def version():
     """Display SecSkill version."""

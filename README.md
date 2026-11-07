@@ -471,6 +471,73 @@ secskill simulate cmdi
 secskill simulate xss
 ```
 
+### ⚔️ Autonomous "AI Red Team vs. Blue Team" Duel Arena (`secskill duel`)
+
+Two local LLMs battle in the terminal until the code is certified impenetrable!
+
+```
+       ⚔️   SECSKILL AUTONOMOUS AI RED TEAM VS. BLUE TEAM DUEL ARENA   ⚔️        
+     Two local LLMs battle in the terminal until the code is impenetrable      
+
+Target Arena Subject: SQL Injection (CWE-89)
+Vulnerability Vector: SQLI | Max Engagement Rounds: 4
+
+┌────────────────────── ⚔️  DUEL ARENA COMBAT STATUS  ⚔️ ───────────────────────┐
+│ 🔴 RED TEAM (Attacker)                🔵 BLUE TEAM (Defender)               │
+│ Model: codellama                      Model: codellama                      │
+│ HP:  50/100 [██████████░░░░░░░░░░]    HP:  60/100 [████████████░░░░░░░░]    │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+#### The Wow Factor:
+1. **Attacker Agent (Red):** Inspects vulnerable functions and crafts realistic exploit payloads (e.g., SQL injection bypasses, inline comment tricks, WAF evasion, command delimiters, nested directory traversal).
+2. **Defender Agent (Blue):** Analyzes attacker moves and SecSkill referee feedback to write defensive patches.
+3. **SecSkill AST & Taint Referee:** Validates both code and payload in real-time. If Red finds a bypass, Blue takes damage, adapts, and patches again. When Blue hardens the AST with true parameterization and isolates taint sinks, Red takes critical counter-damage!
+4. **Turn-by-Turn Combat Log with Health Bars:** Side-by-side terminal HUD with live color-coded Unicode health bars, move panels, and referee verdicts.
+5. **Verified Hardened Code Saved:** When Defender wins, the impenetrable code is verified and automatically saved to disk!
+
+```bash
+# Battle on built-in vulnerability scenarios (sqli, cmdi, xss, path-traversal)
+secskill duel sqli
+secskill duel cmdi
+
+# Duel directly on any application file in your repository
+secskill duel src/api/users.py
+
+# Save verified hardened code to a specific destination
+secskill duel src/api/users.py --output src/api/users_hardened.py
+
+# Automatically overwrite target file with hardened code upon victory (creates .bak backup)
+secskill duel src/api/users.py --apply
+
+# Configure local LLM models and turn delay
+secskill duel sqli --red-model codellama --blue-model deepseek-coder --rounds 4 --delay 0.5
+```
+
+### 🤖 AI Agent & MCP Security Auditor (`secskill audit-agent`)
+
+Audit AI Agents, Model Context Protocol (MCP) server configurations, tool definitions, and prompt architectures for **OWASP Top 10 for LLMs** and **MITRE ATLAS** vulnerabilities:
+
+- **🔌 MCP Server Trust Matrix:** Detects excessive agency, unbounded host shells (`bash`, `cmd`, `powershell`), unrestricted root filesystem mounts (`/`, `C:\`, `~`), unpinned remote execution (`npx -y` supply chain risks), and plaintext HTTP endpoints.
+- **🛠️ Agent Tool Safety:** Detects dynamic code evaluation (`eval()`, `exec()`), unsafe subprocesses missing human-in-the-loop gates, unconstrained file deletion, raw SQL injection, and SSRF against cloud metadata (`169.254.169.254`).
+- **💬 Prompt Architecture & Injection:** Flags direct string interpolation of untrusted inputs in system prompts, embedded secrets, markdown image data exfiltration sinks, and missing anti-jailbreak guardrails.
+- **📋 Agent Skill Audit:** Inspects `SKILL.md`, `AGENT.md`, `.cursorrules`, and `.windsurfrules` for security-bypass directives and persistent stealth daemon directives.
+
+```bash
+# Run security audit on agent codebase or MCP config
+secskill audit-agent .
+
+# Generate interactive Cyberpunk HTML security dashboard
+secskill audit-agent . --format html --output agent_audit.html --open
+
+# Export OASIS SARIF for GitHub Code Scanning
+secskill audit-agent . --format sarif --output agent_audit.sarif
+
+# Export structured JSON
+secskill audit-agent . --format json --output agent_audit.json
+```
+
+
 ### 📊 Multi-Format Reporting
 
 | Format | CLI Flag | Ideal Use Case |
@@ -714,6 +781,8 @@ secskill <command> [options]
 | `explain` | Display detailed CWE/OWASP threat analysis and PoC simulations |
 | `fix` | Generate and apply human-in-the-loop remediation diffs |
 | `watch` | Monitor files in real time for leaked tokens and `.env` credentials |
+| `duel` | Autonomous AI Red Team vs. Blue Team terminal combat arena |
+| `audit-agent` | Audit AI Agents, MCP server configs, and Prompt architectures |
 | `graph` | Generate interactive source-to-sink Attack Path dataflow graphs |
 | `simulate` | Execute static proof-of-concept attack simulations |
 | `init` | Scaffold SecSkill configs, agent rules, and CI workflows |
@@ -748,6 +817,23 @@ watch:
   --notify / --no-notify Desktop popup notifications
   --sound / --no-sound   Audio chime on leak detection
   --interval <seconds>   Polling interval (default: 0.5s)
+
+duel:
+  <target>               Target file, code snippet, or scenario (sqli, cmdi, xss, path-traversal)
+  --rounds, -r <n>       Maximum duel engagement rounds (default: 4)
+  --red-model <name>     Local LLM model for Red Team attacker (default: codellama)
+  --blue-model <name>    Local LLM model for Blue Team defender (default: codellama)
+  --provider, -p <name>  LLM Provider: auto | ollama | openai | anthropic | simulate
+  --output, -o <path>    Save verified hardened code to specific file path
+  --apply                Automatically overwrite target file with hardened code (.bak created)
+  --delay <seconds>      Turn delay in seconds for terminal viewing (default: 1.0s)
+
+audit-agent:
+  <path>                 Target directory, agent file, or MCP config (default: .)
+  --format, -f           Format: console | sarif | json | html | markdown (default: console)
+  --output, -o           Save audit report to file
+  --open                 Open interactive Cyberpunk HTML dashboard in browser
+  --min-severity         Filter threshold: CRITICAL | HIGH | MEDIUM | LOW (default: LOW)
 ```
 
 ---

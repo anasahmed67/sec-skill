@@ -190,6 +190,10 @@ When interacting with the developer, support both natural language requests and 
 - `secskill scan --scope changed-files` -> Review staged / unstaged git changes
 - `secskill explain --finding <id>` -> Provide detailed CWE background, attack simulation, and threat context
 - `secskill fix --finding <id> --dry-run` -> Show proposed remediation diff without modifying files
+- `secskill duel <file|scenario>` -> Autonomous AI Red Team vs. Blue Team duel arena until code is impenetrable
+- `secskill duel <file> --apply` -> Duel on vulnerable file and automatically apply verified hardened code
+- `secskill audit-agent .` -> Audit AI Agents, MCP server configs, and Prompt architectures for OWASP LLM / MITRE ATLAS risks
+- `secskill audit-agent . --format html --open` -> Generate interactive Cyberpunk HTML agent audit dashboard
 - `secskill scan --format sarif --output secskill.sarif` -> Export SARIF for GitHub Code Scanning
 - `secskill init` -> Create `.secskill/AGENT.md`, `rules.md`, and CI workflow in the current project
 

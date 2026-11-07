@@ -26,3 +26,12 @@ class SecSkillAgentSkill:
             "message": "Remediation successfully verified.",
             "remaining_findings": 0
         }
+
+    def audit_agent(self, target_path: str = "") -> Dict[str, Any]:
+        """Audit AI Agent, MCP server configurations, tools, and prompts for security vulnerabilities."""
+        from secskill.agent_audit import AgentSecurityAuditor
+        target = target_path if target_path else self.target_dir
+        auditor = AgentSecurityAuditor()
+        report = auditor.audit(target)
+        return report.model_dump()
+
