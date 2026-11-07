@@ -92,8 +92,8 @@
 
 <div align="center">
 
-[![CI Pipeline](https://img.shields.io/github/actions/workflow/status/your-org/secskill/ci.yml?branch=main&label=CI%20Pipeline&logo=github-actions&logoColor=white&style=flat-square)](https://github.com/your-org/secskill/actions)
-[![Version](https://img.shields.io/badge/version-0.1.0--beta-00ff88?style=flat-square&logo=semver&logoColor=white)](https://github.com/your-org/secskill/releases)
+[![CI Pipeline](https://img.shields.io/github/actions/workflow/status/anasahmed67/sec-skill/ci.yml?branch=main&label=CI%20Pipeline&logo=github-actions&logoColor=white&style=flat-square)](https://github.com/anasahmed67/sec-skill/actions)
+[![Version](https://img.shields.io/badge/version-0.1.0--beta-00ff88?style=flat-square&logo=semver&logoColor=white)](https://github.com/anasahmed67/sec-skill/releases)
 [![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-3776ab?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue?style=flat-square&logo=apache&logoColor=white)](LICENSE)
 [![Ruff](https://img.shields.io/badge/linter-ruff-ff7f00?style=flat-square&logo=ruff&logoColor=white)](https://docs.astral.sh/ruff/)
@@ -268,8 +268,8 @@ pip install secskill
 ### 2. From Source (Development Mode)
 
 ```bash
-git clone https://github.com/your-org/secskill.git
-cd secskill
+git clone https://github.com/anasahmed67/sec-skill.git
+cd sec-skill
 pip install -e ".[dev]"
 ```
 
@@ -330,7 +330,7 @@ Because `SKILL.md` was copied into `.gemini/skills/`, any updates to instruction
   ```
 - **Installed directly from Git:**
   ```bash
-  pip install --upgrade git+https://github.com/your-org/secskill.git
+  pip install --upgrade git+https://github.com/anasahmed67/sec-skill.git
   ```
 - **Installed from source in editable mode (`pip install -e .`):**
   - Simply pull the latest changes: `git pull origin main` (code edits in `.py` files take effect immediately).
@@ -1005,8 +1005,8 @@ Contributions are welcome! Please follow these guidelines:
 
 ```bash
 # 1. Fork & clone repository
-git clone https://github.com/your-org/secskill.git
-cd secskill
+git clone https://github.com/anasahmed67/sec-skill.git
+cd sec-skill
 
 # 2. Setup virtual environment
 python -m venv .venv

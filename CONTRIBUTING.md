@@ -10,8 +10,8 @@ SecSkill requires Python 3.10+ and standard build tools.
 
 ```bash
 # 1. Clone your fork of the repository
-git clone https://github.com/<your-username>/secskill.git
-cd secskill
+git clone https://github.com/<your-username>/sec-skill.git
+cd sec-skill
 
 # 2. Create and activate a virtual environment
 python3 -m venv .venv

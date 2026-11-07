@@ -61,11 +61,11 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/secskill/secskill"
-Documentation = "https://github.com/secskill/secskill#readme"
-Repository = "https://github.com/secskill/secskill.git"
-Issues = "https://github.com/secskill/secskill/issues"
-Changelog = "https://github.com/secskill/secskill/releases"
+Homepage = "https://github.com/anasahmed67/sec-skill"
+Documentation = "https://github.com/anasahmed67/sec-skill#readme"
+Repository = "https://github.com/anasahmed67/sec-skill.git"
+Issues = "https://github.com/anasahmed67/sec-skill/issues"
+Changelog = "https://github.com/anasahmed67/sec-skill/releases"
 
 [project.scripts]
 secskill = "secskill.cli:app"
