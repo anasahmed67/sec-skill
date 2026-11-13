@@ -46,7 +46,9 @@ class AgentSecurityAuditor:
         findings: List[AgentFinding] = []
         mcp_servers: List[McpServerInfo] = []
 
-        all_files = discover_files(root, extra_ignores=extra_ignores, include_secskill=include_secskill)
+        all_files = discover_files(
+            root, extra_ignores=extra_ignores, include_secskill=include_secskill
+        )
         stats.total_files_audited = len(all_files)
 
         for f in all_files:

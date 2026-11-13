@@ -1,10 +1,9 @@
 """Tests for ignoring secskill folders, files, and custom exclusion patterns."""
 from pathlib import Path
 from typer.testing import CliRunner
-from secskill.cli import app
-from secskill.utils.files import discover_files, is_secskill_file
-from secskill.context import build_scan_context
 from secskill.agent_audit import AgentSecurityAuditor
+from secskill.cli import app
+from secskill.utils.files import discover_files
 
 runner = CliRunner()
 
@@ -17,7 +16,10 @@ def test_discover_files_ignores_secskill_folder_and_files(tmp_path: Path):
     # secskill folder
     secskill_file = tmp_path / "secskill" / "rules.py"
     secskill_file.parent.mkdir(parents=True, exist_ok=True)
-    secskill_file.write_text("import subprocess\nsubprocess.run('cmd', shell=True)", encoding="utf-8")
+    secskill_file.write_text(
+        "import subprocess\nsubprocess.run('cmd', shell=True)",
+        encoding="utf-8",
+    )
 
     # .secskill folder
     dot_secskill_file = tmp_path / ".secskill" / "AGENT.md"

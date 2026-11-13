@@ -35,7 +35,15 @@ def is_secskill_file(path: Path) -> bool:
         return True
     if name.startswith("secskill.") or name == "secskill":
         return True
-    if name in {"secskill.sarif", "secskill.json", "secskill.yaml", ".secskill.yaml", "secskill.yml", "secskill.log"}:
+    known_secskill_files = {
+        "secskill.sarif",
+        "secskill.json",
+        "secskill.yaml",
+        ".secskill.yaml",
+        "secskill.yml",
+        "secskill.log",
+    }
+    if name in known_secskill_files:
         return True
     return False
 
@@ -81,7 +89,8 @@ def is_path_ignored(
     # Check directory parts against ignored sets
     all_ignored = IGNORED_DIRS if extra_dirs is None else IGNORED_DIRS | extra_dirs
     if include_secskill:
-        all_ignored = {d for d in all_ignored if d not in {"secskill", ".secskill", ".secskill_cache"}}
+        secskill_names = {"secskill", ".secskill", ".secskill_cache"}
+        all_ignored = {d for d in all_ignored if d not in secskill_names}
     for part in rel.parts[:-1]:
         if part in all_ignored or part.lower() in all_ignored:
             return True
@@ -98,7 +107,10 @@ def is_path_ignored(
                 continue
             if fnmatch.fnmatch(rel_posix, pat_lower) or fnmatch.fnmatch(fname, pat_lower):
                 return True
-            if fnmatch.fnmatch(rel_posix, f"*/{pat_lower}") or fnmatch.fnmatch(rel_posix, f"{pat_lower}/*"):
+            if (
+                fnmatch.fnmatch(rel_posix, f"*/{pat_lower}")
+                or fnmatch.fnmatch(rel_posix, f"{pat_lower}/*")
+            ):
                 return True
 
     return False
@@ -113,7 +125,8 @@ def discover_files(
 
     # If the target directory itself is a secskill directory and secskill is excluded, return empty
     if not include_secskill:
-        if root.name.lower() in {"secskill", ".secskill", ".secskill_cache"} or is_secskill_file(root):
+        is_secskill_dir = root.name.lower() in {"secskill", ".secskill", ".secskill_cache"}
+        if is_secskill_dir or is_secskill_file(root):
             return []
 
     custom_patterns = load_secskillignore(root)
