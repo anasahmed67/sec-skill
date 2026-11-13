@@ -97,3 +97,72 @@ def test_cli_graph_html(tmp_path: Path):
     assert out_file.is_file()
     assert "Attack Path Visualizer" in out_file.read_text(encoding="utf-8")
 
+
+def test_calculate_graph_layout_geometry():
+    """Unit test for layout geometry and coordinate calculations isolated from HTML/rendering."""
+    import io
+    from rich.console import Console
+    from secskill.graph.layout import calculate_graph_layout
+    from secskill.graph.svg import generate_svg_markup
+    from secskill.graph.presenters import render_terminal_pipeline
+
+    f1 = Finding(
+        id="F-LAYOUT-1",
+        rule_id="R-SQL",
+        title="SQL Injection",
+        description="SQL flaw",
+        severity=Severity.CRITICAL,
+        file_path="app/db.py",
+        line_number=10,
+        cwe_id="CWE-89",
+    )
+    f2 = Finding(
+        id="F-LAYOUT-2",
+        rule_id="R-CMD",
+        title="Command Injection",
+        description="RCE flaw",
+        severity=Severity.HIGH,
+        file_path="app/cmd.py",
+        line_number=25,
+        cwe_id="CWE-78",
+    )
+
+    layout = calculate_graph_layout([f1, f2])
+    assert layout.total_findings == 2
+    assert layout.critical_count == 1
+    assert layout.high_count == 1
+    assert len(layout.attack_paths) == 2
+    assert layout.canvas_width == 1150
+    assert layout.canvas_height >= 700
+
+    # Verify column distribution
+    for node in layout.entry_nodes.values():
+        assert node.x == 110
+        assert node.y > 0
+    for node in layout.file_nodes.values():
+        assert node.x == 390
+        assert node.y > 0
+    for node in layout.sink_nodes:
+        assert node.x == 680
+        assert node.y > 0
+    for node in layout.target_nodes.values():
+        assert node.x == 980
+        assert node.y > 0
+
+    # Test SVG generation in isolation
+    edges_svg, nodes_svg = generate_svg_markup(layout)
+    assert '<path d="M 110' in edges_svg
+    assert "edge-exploit-glow" in edges_svg
+    assert "node-entry" in nodes_svg
+    assert "node-sink" in nodes_svg
+
+    # Test terminal pipeline with injected in-memory console
+    string_io = io.StringIO()
+    test_console = Console(file=string_io, force_terminal=False, color_system=None)
+    render_terminal_pipeline(f1, console=test_console)
+    output = string_io.getvalue()
+    assert "Attack Path Dataflow" in output
+    assert "Entrypoint (Source)" in output
+    assert "cursor.execute" in output
+
+

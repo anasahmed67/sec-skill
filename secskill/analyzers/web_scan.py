@@ -10,18 +10,7 @@ import urllib.parse
 from datetime import datetime, timezone
 from typing import List, Dict, Any, Optional
 import httpx
-from pydantic import BaseModel, Field
-from secskill.models import Finding, Severity, Confidence
-
-class WebScanReport(BaseModel):
-    target_url: str
-    timestamp: str
-    status_code: Optional[int] = None
-    final_url: Optional[str] = None
-    tls_info: Dict[str, Any] = Field(default_factory=dict)
-    findings: List[Finding] = Field(default_factory=list)
-    headers_analyzed: Dict[str, str] = Field(default_factory=dict)
-    compliance_summary: Dict[str, Any] = Field(default_factory=dict)
+from secskill.models import Finding, Severity, Confidence, WebScanReport
 
 class WebSecurityScanner:
     """Audits live websites, URLs, and APIs for security misconfigurations and vulnerabilities."""

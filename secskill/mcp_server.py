@@ -16,6 +16,7 @@ from secskill.analyzers.web_scan import WebSecurityScanner
 from secskill.agent_audit import AgentSecurityAuditor
 from secskill.visual_graph import AttackPathGraph
 from secskill.models import Finding, Severity
+from secskill.services.knowledge import explain_security_topic
 
 logger = logging.getLogger("secskill.mcp")
 
@@ -365,56 +366,8 @@ class SecSkillMCPServer:
         raise ValueError(f"Unknown tool '{name}'")
 
     def _explain_query(self, q: str) -> Dict[str, Any]:
-        if "89" in q or "sql" in q:
-            return {
-                "cwe": "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')",
-                "owasp": "A03:2021-Injection",
-                "severity": "CRITICAL",
-                "attack_vector": "Attacker injects characters like ' OR 1=1 -- to alter SQL AST and bypass auth or exfiltrate data.",
-                "remediation": "Always use driver-level parameterized queries or ORM bindings. Never interpolate user variables directly into query strings.",
-                "standards": {"nist": "SI-10", "iso_27001": "A.8.28", "pci_dss": "Req 6.2.4"}
-            }
-        elif "78" in q or "cmd" in q:
-            return {
-                "cwe": "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')",
-                "owasp": "A03:2021-Injection",
-                "severity": "CRITICAL",
-                "attack_vector": "Attacker supplies shell metacharacters (; | & ` $()) to execute arbitrary operating system commands.",
-                "remediation": "Use subprocess APIs with discrete argument lists and shell=False (e.g. subprocess.run(['ls', path], shell=False)).",
-                "standards": {"nist": "SI-10", "iso_27001": "A.8.28", "pci_dss": "Req 6.2.4"}
-            }
-        elif "79" in q or "xss" in q:
-            return {
-                "cwe": "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')",
-                "owasp": "A03:2021-Injection",
-                "severity": "HIGH",
-                "attack_vector": "Attacker injects malicious JavaScript executed in the victim's browser session.",
-                "remediation": "Contextually encode user output (HTML, attribute, JS), use DOMPurify, and enforce a strict Content-Security-Policy.",
-                "standards": {"nist": "SI-10", "iso_27001": "A.8.26", "pci_dss": "Req 6.4.1"}
-            }
-        elif "798" in q or "secret" in q:
-            return {
-                "cwe": "CWE-798: Use of Hard-coded Credentials",
-                "owasp": "A02:2021-Cryptographic Failures",
-                "severity": "CRITICAL",
-                "attack_vector": "Adversaries extract plain secrets from git commits or client-side assets to compromise cloud infrastructure.",
-                "remediation": "Revoke and rotate credentials immediately. Store secrets in environment variables or key vaults (AWS Secrets Manager, Vault).",
-                "standards": {"nist": "IA-5", "iso_27001": "A.8.24", "pci_dss": "Req 6.3.2"}
-            }
-        elif "639" in q or "862" in q or "idor" in q or "bola" in q:
-            return {
-                "cwe": "CWE-639 / CWE-862: Broken Object-Level Authorization (IDOR/BOLA)",
-                "owasp": "A01:2021-Broken Access Control & API1:2023",
-                "severity": "HIGH",
-                "attack_vector": "Attacker alters record ID parameter (e.g. /api/invoices/1002) to view or update another user's private data.",
-                "remediation": "Always validate that the authenticated user owns or has explicit permission to access the requested entity ID.",
-                "standards": {"nist": "AC-3", "iso_27001": "A.8.26", "pci_dss": "Req 6.5.8"}
-            }
-        else:
-            return {
-                "query": q,
-                "message": f"Security guidance for {q}: Refer to OWASP Top 10 and MITRE CWE catalogs. Ensure strict input validation, least-privilege authorization, and cryptographic parameterization."
-            }
+        """Explain finding or vulnerability query via domain knowledge service."""
+        return explain_security_topic(q)
 
     def run_stdio(self):
         """Main loop reading from stdin and writing to stdout."""

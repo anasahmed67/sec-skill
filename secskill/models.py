@@ -65,3 +65,24 @@ class ScanReport(BaseModel):
     timestamp: str
     findings: List[Finding] = Field(default_factory=list)
     summary: Dict[str, int] = Field(default_factory=dict)
+
+class WebScanReport(BaseModel):
+    target_url: str
+    timestamp: str
+    status_code: Optional[int] = None
+    final_url: Optional[str] = None
+    tls_info: Dict[str, Any] = Field(default_factory=dict)
+    findings: List[Finding] = Field(default_factory=list)
+    headers_analyzed: Dict[str, str] = Field(default_factory=dict)
+    compliance_summary: Dict[str, Any] = Field(default_factory=dict)
+
+__all__ = [
+    "Severity",
+    "Confidence",
+    "TriageStatus",
+    "Finding",
+    "ScanContext",
+    "Rule",
+    "ScanReport",
+    "WebScanReport",
+]

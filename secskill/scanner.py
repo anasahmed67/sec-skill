@@ -1,8 +1,9 @@
 """Pipeline orchestrator running Analyzers -> Validation -> LLM Review."""
 import uuid
 from datetime import datetime, timezone
-from typing import List
+from typing import List, Optional
 from secskill.models import ScanContext, ScanReport, Finding, Severity
+from secskill.analyzers.base import BaseAnalyzer
 from secskill.analyzers.static_analysis import StaticAnalyzer
 from secskill.analyzers.secret_scan import SecretAnalyzer
 from secskill.analyzers.dependency_scan import DependencyAnalyzer
@@ -11,15 +12,28 @@ from secskill.validation.filter import FindingFilter
 from secskill.validation.reachability import ReachabilityValidator
 
 class SecurityScanner:
-    def __init__(self, enable_llm: bool = False, provider_name: str = "ollama"):
-        self.analyzers = [
+    """Core SAST analysis pipeline orchestrator.
+    
+    Coordinates analyzers, deduplication/ignore filtering, reachability analysis,
+    and optional LLM contextual triage into a cohesive ScanReport.
+    """
+
+    def __init__(
+        self,
+        enable_llm: bool = False,
+        provider_name: str = "ollama",
+        analyzers: Optional[List[BaseAnalyzer]] = None,
+        filter_engine: Optional[FindingFilter] = None,
+        reachability_validator: Optional[ReachabilityValidator] = None,
+    ):
+        self.analyzers: List[BaseAnalyzer] = analyzers if analyzers is not None else [
             StaticAnalyzer(),
             SecretAnalyzer(),
             DependencyAnalyzer(),
             DataflowAnalyzer(),
         ]
-        self.filter = FindingFilter()
-        self.reachability = ReachabilityValidator()
+        self.filter = filter_engine or FindingFilter()
+        self.reachability = reachability_validator or ReachabilityValidator()
         self.enable_llm = enable_llm
         self.provider_name = provider_name
 
