@@ -16,8 +16,9 @@ from secskill.notifier import send_desktop_notification
 console = Console()
 
 IGNORE_DIRS = {
-    ".git", "node_modules", "venv", ".venv", "__pycache__", "dist", "build",
-    ".pytest_cache", ".ruff_cache", "target", ".secskill", ".idea", ".vscode"
+    ".git", ".svn", ".hg", "node_modules", "vendor", "venv", ".venv", "env",
+    "__pycache__", "dist", "build", ".pytest_cache", ".ruff_cache", ".mypy_cache",
+    "target", "secskill", ".secskill", ".secskill_cache", "graphify-out", ".idea", ".vscode"
 }
 
 IGNORE_EXTENSIONS = {
@@ -182,8 +183,13 @@ class SecretWatcher:
 
     def _should_ignore(self, path: Path) -> bool:
         """Check if path should be skipped."""
-        parts = set(path.parts)
-        if any(ignored in parts for ignored in IGNORE_DIRS):
+        parts = {p.lower() for p in path.parts}
+        if any(ignored.lower() in parts for ignored in IGNORE_DIRS):
+            return True
+        name_lower = path.name.lower()
+        if name_lower.startswith("secskill.") or name_lower.startswith(".secskill"):
+            return True
+        if name_lower in {"secskill", ".secskill", ".secskill_cache"}:
             return True
         if path.suffix.lower() in IGNORE_EXTENSIONS:
             return True

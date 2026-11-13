@@ -11,7 +11,30 @@ class Settings(BaseSettings):
     llm_cache: bool = True
     llm_cache_dir: str = ".secskill_cache"
     fail_on_severity: str = "HIGH"
-    ignored_paths: List[str] = [".git", ".venv", "node_modules", "dist", "build"]
+    ignored_paths: List[str] = [
+        ".git",
+        ".svn",
+        ".hg",
+        "node_modules",
+        "vendor",
+        "venv",
+        ".venv",
+        "env",
+        "dist",
+        "build",
+        "target",
+        "__pycache__",
+        ".pytest_cache",
+        ".ruff_cache",
+        ".mypy_cache",
+        ".idea",
+        ".vscode",
+        ".tox",
+        "secskill",
+        ".secskill",
+        ".secskill_cache",
+        "graphify-out",
+    ]
 
     @classmethod
     def load(cls, config_path: Optional[Path] = None) -> "Settings":

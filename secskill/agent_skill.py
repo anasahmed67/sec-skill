@@ -17,10 +17,15 @@ class SecSkillAgentSkill:
         self.scanner = SecurityScanner()
         self.web_scanner = WebSecurityScanner()
 
-    def run_security_scan(self, file_path: str = "") -> List[Dict[str, Any]]:
+    def run_security_scan(
+        self,
+        file_path: str = "",
+        extra_ignores: Optional[List[str]] = None,
+        include_secskill: bool = False,
+    ) -> List[Dict[str, Any]]:
         """Scan a specific file or the entire repository and return findings."""
         target = file_path if file_path else self.target_dir
-        context = build_scan_context(target)
+        context = build_scan_context(target, extra_ignores=extra_ignores, include_secskill=include_secskill)
         report = self.scanner.scan(context)
         return [f.model_dump() for f in report.findings]
 

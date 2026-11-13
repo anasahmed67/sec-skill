@@ -103,6 +103,8 @@ def scan(
     llm: bool = typer.Option(False, "--llm", help="Enable LLM contextual triage"),
     provider: str = typer.Option("ollama", "--provider", help="LLM Provider: openai, anthropic, ollama"),
     consent: bool = typer.Option(False, "--consent", help="Allow external network queries for dependency audits (OSV)"),
+    ignore: Optional[str] = typer.Option(None, "--ignore", "-i", help="Comma-separated paths or glob patterns to ignore"),
+    include_secskill: bool = typer.Option(False, "--include-secskill", help="Include secskill internal files and folders in audit"),
 ):
     """Run security audit on target codebase or diff."""
     target_path = str(file) if file else str(path)
@@ -110,7 +112,8 @@ def scan(
     if diff:
         console.print(f"[dim]Diff base: {diff}[/dim]")
 
-    context = build_scan_context(target_path)
+    extra_ignores = [p.strip() for p in ignore.split(",") if p.strip()] if ignore else None
+    context = build_scan_context(target_path, extra_ignores=extra_ignores, include_secskill=include_secskill)
     if diff:
         context.git_branch = diff
     context.options["consent"] = consent
@@ -455,6 +458,8 @@ def audit_agent(
     output: Optional[Path] = typer.Option(None, "--output", "-o", help="Report output file path"),
     open_browser: bool = typer.Option(False, "--open", help="Open HTML report in default browser"),
     min_severity: str = typer.Option("LOW", "--min-severity", help="Minimum severity filter (CRITICAL, HIGH, MEDIUM, LOW)"),
+    ignore: Optional[str] = typer.Option(None, "--ignore", "-i", help="Comma-separated paths or patterns to ignore"),
+    include_secskill: bool = typer.Option(False, "--include-secskill", help="Include secskill internal files and folders"),
 ):
     """Audit AI Agents, MCP server configs, and Prompt architectures for OWASP LLM / MITRE ATLAS vulnerabilities."""
     import webbrowser
@@ -463,7 +468,8 @@ def audit_agent(
     from secskill.models import Severity
 
     auditor = AgentSecurityAuditor()
-    report = auditor.audit(str(path))
+    extra_ignores = [p.strip() for p in ignore.split(",") if p.strip()] if ignore else None
+    report = auditor.audit(str(path), extra_ignores=extra_ignores, include_secskill=include_secskill)
 
     # Severity filtering if specified
     severity_order = {Severity.CRITICAL: 4, Severity.HIGH: 3, Severity.MEDIUM: 2, Severity.LOW: 1, Severity.INFO: 0}

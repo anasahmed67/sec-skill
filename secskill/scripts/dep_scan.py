@@ -14,6 +14,12 @@ import urllib.error
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 
+IGNORE_DIRS = {
+    ".git", ".svn", ".hg", "node_modules", "vendor", "venv", ".venv", "env",
+    "__pycache__", "dist", "build", ".pytest_cache", ".ruff_cache", "target",
+    "secskill", ".secskill", ".secskill_cache", "graphify-out", ".idea", ".vscode"
+}
+
 # Offline fallback database of high-severity CVEs for popular packages
 OFFLINE_VULN_DB = {
     "pypi": {
@@ -235,6 +241,13 @@ def scan_dependencies(target_dir: str, allow_network: bool = False) -> List[Dict
     else:
         for p in root.rglob("*"):
             if not p.is_file():
+                continue
+            try:
+                rel = p.relative_to(root)
+                parts = {part.lower() for part in rel.parts[:-1]}
+            except ValueError:
+                parts = {part.lower() for part in p.parts[:-1]}
+            if any(ignored.lower() in parts for ignored in IGNORE_DIRS):
                 continue
             if p.name == "requirements.txt":
                 packages.extend(parse_requirements_txt(p))

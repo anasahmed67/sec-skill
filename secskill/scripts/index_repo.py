@@ -14,7 +14,8 @@ from typing import Dict, List, Any
 IGNORE_DIRS = {
     ".git", ".svn", ".hg", "node_modules", "venv", ".venv", "env",
     "__pycache__", ".pytest_cache", ".ruff_cache", "dist", "build",
-    ".idea", ".vscode", "target", "vendor", ".tox"
+    ".idea", ".vscode", "target", "vendor", ".tox",
+    "secskill", ".secskill", ".secskill_cache", "graphify-out"
 }
 
 MANIFEST_FILENAMES = {
@@ -53,8 +54,11 @@ EXTENSIONS = {
 
 def is_ignored(path: Path, root: Path) -> bool:
     for part in path.relative_to(root).parts:
-        if part in IGNORE_DIRS or part.startswith(".git"):
+        if part.lower() in IGNORE_DIRS or part in IGNORE_DIRS or part.startswith(".git"):
             return True
+    fname = path.name.lower()
+    if fname.startswith("secskill.") or fname.startswith(".secskill"):
+        return True
     return False
 
 def index_repository(target_path: str) -> Dict[str, Any]:

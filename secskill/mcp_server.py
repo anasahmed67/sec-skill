@@ -43,6 +43,16 @@ TOOLS = [
                 "file": {
                     "type": "string",
                     "description": "Optional single file path to audit."
+                },
+                "ignore": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Optional list of paths or glob patterns to ignore."
+                },
+                "include_secskill": {
+                    "type": "boolean",
+                    "description": "Set to true to scan internal secskill files and folders. Defaults to false.",
+                    "default": False
                 }
             }
         }
@@ -98,6 +108,16 @@ TOOLS = [
                     "type": "string",
                     "description": "Path to codebase or agent configuration directory.",
                     "default": "."
+                },
+                "ignore": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Optional list of paths or glob patterns to ignore."
+                },
+                "include_secskill": {
+                    "type": "boolean",
+                    "description": "Set to true to scan internal secskill files and folders. Defaults to false.",
+                    "default": False
                 }
             }
         }
@@ -190,7 +210,11 @@ class SecSkillMCPServer:
     def _execute_tool(self, name: str, args: Dict[str, Any]) -> Any:
         if name == "secskill_scan":
             target = args.get("file") or args.get("path", ".")
-            ctx = build_scan_context(target)
+            extra_ignores = args.get("ignore")
+            if isinstance(extra_ignores, str):
+                extra_ignores = [p.strip() for p in extra_ignores.split(",") if p.strip()]
+            include_secskill = bool(args.get("include_secskill", False))
+            ctx = build_scan_context(target, extra_ignores=extra_ignores, include_secskill=include_secskill)
             if args.get("diff"):
                 ctx.git_branch = args["diff"]
             report = self.scanner.scan(ctx)
@@ -226,7 +250,11 @@ class SecSkillMCPServer:
 
         elif name == "secskill_audit_agent":
             target = args.get("path", ".")
-            report = self.agent_auditor.audit(target)
+            extra_ignores = args.get("ignore")
+            if isinstance(extra_ignores, str):
+                extra_ignores = [p.strip() for p in extra_ignores.split(",") if p.strip()]
+            include_secskill = bool(args.get("include_secskill", False))
+            report = self.agent_auditor.audit(target, extra_ignores=extra_ignores, include_secskill=include_secskill)
             return {
                 "target": report.target_path,
                 "trust_index": report.security_score,

@@ -22,6 +22,7 @@ from secskill.agent_audit.tool_analyzer import AgentToolAnalyzer, is_tool_candid
 from secskill.agent_audit.prompt_analyzer import PromptArchitectureAnalyzer
 from secskill.agent_audit.skill_analyzer import AgentSkillAnalyzer
 from secskill.agent_audit.html_report import AgentAuditHtmlReporter
+from secskill.utils.files import discover_files
 
 console = Console()
 
@@ -34,22 +35,18 @@ class AgentSecurityAuditor:
         self.prompt_analyzer = PromptArchitectureAnalyzer()
         self.skill_analyzer = AgentSkillAnalyzer()
 
-    def audit(self, target_path: str) -> AgentAuditReport:
+    def audit(
+        self,
+        target_path: str,
+        extra_ignores: Optional[List[str]] = None,
+        include_secskill: bool = False,
+    ) -> AgentAuditReport:
         root = Path(target_path).resolve()
         stats = AgentAuditStats()
         findings: List[AgentFinding] = []
         mcp_servers: List[McpServerInfo] = []
 
-        all_files: List[Path] = []
-        if root.is_file():
-            all_files = [root]
-        else:
-            # Skip noise directories
-            ignore_parts = {".git", "node_modules", "venv", ".venv", "__pycache__", ".pytest_cache", ".ruff_cache", "dist", "build"}
-            for p in root.rglob("*"):
-                if p.is_file() and not any(part in ignore_parts for part in p.parts):
-                    all_files.append(p)
-
+        all_files = discover_files(root, extra_ignores=extra_ignores, include_secskill=include_secskill)
         stats.total_files_audited = len(all_files)
 
         for f in all_files:

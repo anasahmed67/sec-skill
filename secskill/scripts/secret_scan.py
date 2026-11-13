@@ -79,8 +79,9 @@ ALLOWLIST_KEYWORDS = [
 ]
 
 IGNORE_DIRS = {
-    ".git", "node_modules", "venv", ".venv", "__pycache__", "dist", "build",
-    ".pytest_cache", ".ruff_cache", "target"
+    ".git", ".svn", ".hg", "node_modules", "vendor", "venv", ".venv", "env",
+    "__pycache__", "dist", "build", ".pytest_cache", ".ruff_cache", "target",
+    "secskill", ".secskill", ".secskill_cache", "graphify-out", ".idea", ".vscode"
 }
 
 def shannon_entropy(data: str) -> float:
@@ -183,7 +184,15 @@ def scan_target(target_path: str) -> List[Dict[str, Any]]:
     for p in root.rglob("*"):
         if not p.is_file():
             continue
-        if any(part in IGNORE_DIRS for part in p.parts):
+        try:
+            rel = p.relative_to(root)
+            parts = {part.lower() for part in rel.parts[:-1]}
+        except ValueError:
+            parts = {part.lower() for part in p.parts[:-1]}
+        if any(ignored.lower() in parts for ignored in IGNORE_DIRS):
+            continue
+        fname = p.name.lower()
+        if fname.startswith("secskill.") or fname.startswith(".secskill"):
             continue
         # Skip binary / media extensions
         if p.suffix.lower() in {".png", ".jpg", ".jpeg", ".gif", ".ico", ".pdf", ".zip", ".tar", ".gz", ".exe", ".bin", ".pyc"}:
