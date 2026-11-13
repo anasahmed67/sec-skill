@@ -1,5 +1,4 @@
 """Typer CLI application for SecSkill."""
-import sys
 import json
 from datetime import datetime
 from typing import Optional
@@ -16,7 +15,7 @@ from secskill.reporting.sarif_report import SarifReporter
 from secskill.reporting.json_report import JsonReporter
 from secskill.reporting.markdown_report import MarkdownReporter
 from secskill.installer import AgentInstaller
-from secskill.analyzers.web_scan import WebSecurityScanner, WebScanReport
+from secskill.analyzers.web_scan import WebSecurityScanner
 
 app = typer.Typer(help="SecSkill - AI-enhanced Security Scanner & Agent Skill")
 console = Console()

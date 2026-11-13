@@ -1,7 +1,7 @@
 """Git helper functions."""
 import subprocess
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Dict, Any
 
 def get_git_info(repo_path: Path) -> Dict[str, Any]:
     try:

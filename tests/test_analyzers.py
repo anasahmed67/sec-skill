@@ -1,6 +1,5 @@
 from pathlib import Path
 from secskill.analyzers.static_analysis import StaticAnalyzer
-from secskill.analyzers.secret_scan import SecretAnalyzer
 from secskill.analyzers.dependency_scan import DependencyAnalyzer
 from secskill.models import ScanContext
 

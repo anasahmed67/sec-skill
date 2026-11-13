@@ -1,7 +1,7 @@
 """Analyzer for Prompt Injection vulnerabilities, system prompt leaks, and exfiltration sinks."""
 import re
 from pathlib import Path
-from typing import List, Optional
+from typing import List
 from secskill.models import Severity
 from secskill.agent_audit.models import (
     AgentFinding,

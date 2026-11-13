@@ -3,7 +3,7 @@ import json
 import re
 import math
 from pathlib import Path
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Tuple
 from secskill.models import Severity
 from secskill.agent_audit.models import (
     AgentFinding,

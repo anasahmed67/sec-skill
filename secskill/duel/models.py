@@ -1,6 +1,6 @@
 """Data models for SecSkill AI Red Team vs. Blue Team Duel Arena."""
 from enum import Enum
-from typing import List, Optional, Dict, Any
+from typing import List, Optional
 from pydantic import BaseModel, Field
 
 class DuelRole(str, Enum):

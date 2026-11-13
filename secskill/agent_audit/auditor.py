@@ -3,7 +3,7 @@ import json
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Optional
 
 from rich.console import Console
 from rich.panel import Panel

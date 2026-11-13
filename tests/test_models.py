@@ -1,4 +1,4 @@
-from secskill.models import Finding, Severity, Confidence, ScanReport
+from secskill.models import Finding, Severity, Confidence
 
 def test_finding_creation():
     finding = Finding(

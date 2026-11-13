@@ -4,8 +4,6 @@ secskill/scripts/index_repo.py
 Collect files, dependency manifests, routes, tests, auth middleware, and configs.
 Builds an entry point and trust boundary map of the target codebase.
 """
-import os
-import sys
 import json
 import argparse
 from pathlib import Path

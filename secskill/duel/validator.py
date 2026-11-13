@@ -1,7 +1,7 @@
 """AST and Taint validation engine for AI Red Team vs. Blue Team Duel Arena."""
 import ast
 import re
-from typing import List, Dict, Any, Tuple, Optional
+from typing import List, Dict, Tuple, Optional
 from secskill.duel.models import ValidationVerdict, AttackPayload
 
 class ASTSecurityInspector(ast.NodeVisitor):

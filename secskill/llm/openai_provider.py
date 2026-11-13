@@ -1,6 +1,5 @@
 """OpenAI provider implementation."""
 import os
-import json
 from typing import Dict, Any
 from secskill.llm.base import BaseLLMProvider
 

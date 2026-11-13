@@ -1,10 +1,8 @@
 """Cross-platform desktop notifications and audio alerts for SecSkill."""
-import os
 import sys
 import platform
 import subprocess
 import base64
-from typing import Optional
 
 def play_alert_sound() -> None:
     """Play an alert sound/chime according to the OS."""

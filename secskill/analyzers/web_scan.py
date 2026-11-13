@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 from typing import List, Dict, Any, Optional
 import httpx
 from pydantic import BaseModel, Field
-from secskill.models import Finding, Severity, Confidence, TriageStatus
+from secskill.models import Finding, Severity, Confidence
 
 class WebScanReport(BaseModel):
     target_url: str

@@ -1,9 +1,7 @@
 import json
-from pathlib import Path
 from typer.testing import CliRunner
 from secskill.models import ScanReport, Finding, Severity
 from secskill.reporting.sarif_report import SarifReporter
-from secskill.cli import app
 
 runner = CliRunner()
 

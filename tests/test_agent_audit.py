@@ -4,11 +4,6 @@ from pathlib import Path
 from typer.testing import CliRunner
 
 from secskill.cli import app
-from secskill.models import Severity
-from secskill.agent_audit.models import (
-    AgentFindingCategory,
-    McpServerInfo,
-)
 from secskill.agent_audit.mcp_analyzer import McpConfigAnalyzer
 from secskill.agent_audit.tool_analyzer import AgentToolAnalyzer
 from secskill.agent_audit.prompt_analyzer import PromptArchitectureAnalyzer

@@ -1,9 +1,7 @@
 """Defensive attack simulator demonstrating how vulnerabilities execute and how fixes neutralize them."""
 from typing import Dict, Any, Optional, List
-from pathlib import Path
 from rich.console import Console
 from rich.panel import Panel
-from rich.table import Table
 from rich.syntax import Syntax
 
 console = Console()

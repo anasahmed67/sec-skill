@@ -5,7 +5,6 @@ Merges raw findings from external tools, static rules, secret scanning,
 and dependency scanning into the SecSkill Unified Finding Schema.
 Deduplicates overlapping findings and harmonizes CWE/OWASP categorizations.
 """
-import sys
 import json
 import argparse
 from pathlib import Path

@@ -1,12 +1,9 @@
 """Agent integration entrypoint for autonomous agents (Antigravity, Claude Code, Cursor, Codex)."""
-import os
-import re
 import tempfile
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 from secskill.context import build_scan_context
 from secskill.scanner import SecurityScanner
-from secskill.models import Finding
 from secskill.analyzers.web_scan import WebSecurityScanner
 
 class SecSkillAgentSkill:

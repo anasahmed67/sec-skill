@@ -2,7 +2,7 @@
 import ast
 import re
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import List, Optional
 from secskill.models import Severity
 from secskill.agent_audit.models import (
     AgentFinding,

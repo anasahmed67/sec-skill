@@ -1,5 +1,4 @@
 """Tests for Autonomous AI Red Team vs. Blue Team Duel Arena (secskill duel)."""
-import tempfile
 from pathlib import Path
 from typer.testing import CliRunner
 from secskill.cli import app

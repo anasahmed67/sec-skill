@@ -1,13 +1,10 @@
 """Attack Path and Dataflow Visual Graph Generator (Mermaid, SVG, HTML & Terminal)."""
-import json
 import html as html_lib
-from typing import List, Dict, Any, Optional
-from pathlib import Path
+from typing import List, Dict, Any
 from rich.console import Console
 from rich.panel import Panel
-from rich.table import Table
 
-from secskill.models import Finding, ScanReport, Severity
+from secskill.models import Finding
 
 console = Console()
 

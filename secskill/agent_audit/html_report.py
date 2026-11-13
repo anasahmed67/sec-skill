@@ -1,6 +1,5 @@
 """Interactive Cyberpunk HTML Report Generator for AI Agent & MCP Security Audits."""
 import html as html_lib
-import json
 from pathlib import Path
 from typing import Optional
 from secskill.agent_audit.models import AgentAuditReport, Severity

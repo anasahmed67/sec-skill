@@ -3,8 +3,7 @@ from pathlib import Path
 from typer.testing import CliRunner
 import httpx
 from secskill.cli import app
-from secskill.analyzers.web_scan import WebSecurityScanner, WebScanReport
-from secskill.models import Severity
+from secskill.analyzers.web_scan import WebSecurityScanner
 
 runner = CliRunner()
 

@@ -4,15 +4,13 @@ secskill/scripts/dep_scan.py
 Parse dependency manifests, audit packages against vulnerability databases (OSV API or offline DB).
 Maps vulnerable packages to OWASP A06:2021 with CVE, affected version, and fixed version.
 """
-import os
-import sys
 import re
 import json
 import argparse
 import urllib.request
 import urllib.error
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 
 IGNORE_DIRS = {
     ".git", ".svn", ".hg", "node_modules", "vendor", "venv", ".venv", "env",

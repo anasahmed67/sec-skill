@@ -1,4 +1,4 @@
-import ast, operator
+import ast
 def calculate(expr):
     # Safe arithmetic evaluator
     node = ast.parse(expr, mode='eval')

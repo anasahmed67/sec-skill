@@ -4,14 +4,12 @@ secskill/scripts/secret_scan.py
 Regex + Shannon entropy + context scanning for exposed secrets and credentials.
 Automatically redacts detected values to preserve privacy.
 """
-import os
-import sys
 import math
 import re
 import json
 import argparse
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 
 SECRET_PATTERNS = [
     {

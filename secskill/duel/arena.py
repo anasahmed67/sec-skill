@@ -1,19 +1,13 @@
 """Autonomous AI Red Team vs. Blue Team Duel Arena Orchestrator and Terminal Visualizer."""
 import time
 from pathlib import Path
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, List
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
-from rich.text import Text
 from rich.syntax import Syntax
-from rich.columns import Columns
 
 from secskill.duel.models import (
-    DuelRole,
-    AttackPayload,
-    DefensePatch,
-    ValidationVerdict,
     DuelRound,
     DuelResult,
 )

@@ -7,10 +7,8 @@ to execute security scans, live website audits, and verified remediations via st
 import sys
 import json
 import logging
-from typing import Dict, Any, List, Optional
-from pathlib import Path
+from typing import Dict, Any, Optional
 
-from secskill.models import ScanContext, Finding
 from secskill.context import build_scan_context
 from secskill.scanner import SecurityScanner
 from secskill.analyzers.web_scan import WebSecurityScanner

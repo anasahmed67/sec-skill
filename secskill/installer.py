@@ -4,7 +4,7 @@ Omni-Agent Installation Engine for Antigravity, Claude Code, Cursor, and Codex.
 Enables SecSkill to be installed as an autonomous skill, MCP server, or rule set in any AI coding agent.
 """
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Dict, List
 
 SKILL_MD_CONTENT = """---
 name: secskill

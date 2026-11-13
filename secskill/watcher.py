@@ -1,15 +1,13 @@
 """Real-time file watcher and secret leak detector with desktop notifications."""
 import os
-import sys
 import time
 import math
 import re
 from pathlib import Path
-from typing import List, Dict, Set, Tuple, Optional
+from typing import List, Dict, Set, Tuple
 from dataclasses import dataclass
 from rich.console import Console
 from rich.panel import Panel
-from rich.table import Table
 
 from secskill.notifier import send_desktop_notification
 

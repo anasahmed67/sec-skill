@@ -1,5 +1,4 @@
 """JSON report generator."""
-import json
 from pathlib import Path
 from typing import Optional
 from secskill.reporting.base import BaseReporter
