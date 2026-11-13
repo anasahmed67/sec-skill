@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "secskill": {
+      "command": "secskill",
+      "args": ["mcp"],
+      "description": "SecSkill SAST/DAST Security Reviewer for AI Agents"
+    }
+  }
+}

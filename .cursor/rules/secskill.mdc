@@ -1,0 +1,23 @@
+---
+description: SecSkill Security Reviewer & Vulnerability Guardrail
+globs: **/*.{py,js,ts,jsx,tsx,java,go,rs,rb,php,cs,c,cpp,yml,yaml,json}
+alwaysApply: false
+---
+
+# SecSkill Security Guardrails for Cursor
+
+When developing, refactoring, or reviewing code:
+1. **Prevent Injections (CWE-89, CWE-78):**
+   - NEVER concatenate strings or f-strings into SQL queries or shell executions.
+   - Always use driver parameterization (e.g. `cursor.execute("SELECT ... WHERE id = ?", (user_id,))`).
+   - Use `subprocess.run(["cmd", arg1], shell=False)` instead of `shell=True`.
+2. **Prevent Broken Object-Level Authorization (BOLA/IDOR - CWE-639, CWE-862):**
+   - In multi-tenant systems, ALWAYS verify ownership in database queries: `WHERE id = :id AND tenant_id = :current_tenant`.
+3. **Secrets & Cryptography (CWE-798, CWE-327):**
+   - Never hardcode API keys, JWT secrets, passwords, or tokens.
+   - Use `secrets` (CSPRNG) for tokens; use Argon2id or bcrypt for password hashing (no MD5/SHA1).
+4. **Web Security & Headers (OWASP A05):**
+   - Ensure cookies specify `HttpOnly`, `Secure`, and `SameSite=Lax/Strict`.
+   - Never set `Access-Control-Allow-Origin: *` when `Access-Control-Allow-Credentials: true`.
+5. **Pre-commit Verification:**
+   - Run `secskill scan --diff main` or `secskill scan <file>` before committing.

@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "secskill": {
+      "command": "secskill",
+      "args": ["mcp"]
+    }
+  }
+}

@@ -23,6 +23,27 @@ def test_infer_attack_path():
     assert "HTTP Request" in path_data["source"]
     assert "cursor.execute" in path_data["sink"]
     assert "Database" in path_data["impact"]
+    assert "eli5" in path_data
+    assert "quick_fix" in path_data
+    assert "target_asset" in path_data
+
+def test_interactive_drawer_elements():
+    finding = Finding(
+        id="F-TEST",
+        rule_id="R-CMD",
+        title="Command Injection Flaw",
+        description="os.system call with unescaped input",
+        severity=Severity.CRITICAL,
+        file_path="server.py",
+        line_number=20,
+        code_snippet="os.system('cat ' + file)",
+        cwe_id="CWE-78"
+    )
+    html_out = AttackPathGraph.generate_html([finding], ".")
+    assert "inspectorDrawer" in html_out
+    assert "Explain Like I&#039;m 5" in html_out or "ELI5" in html_out
+    assert "1-Click Safe Remediation" in html_out
+    assert "FINDINGS" in html_out
 
 def test_to_mermaid():
     finding = Finding(

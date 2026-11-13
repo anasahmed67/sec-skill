@@ -15,6 +15,7 @@ from secskill.reporting.sarif_report import SarifReporter
 from secskill.reporting.json_report import JsonReporter
 from secskill.reporting.markdown_report import MarkdownReporter
 from secskill.installer import AgentInstaller
+from secskill.updater import SecSkillUpdater
 from secskill.analyzers.web_scan import WebSecurityScanner
 
 app = typer.Typer(help="SecSkill - AI-enhanced Security Scanner & Agent Skill")
@@ -187,6 +188,74 @@ def init(
         f"✓ [cyan]CI/CD:[/cyan] .github/workflows/secskill.yml",
         title="SecSkill Omni-Agent Setup"
     ))
+
+@app.command(name="update")
+def update(
+    target: Path = typer.Option(Path("."), "--target", "-t", help="Target project root directory"),
+    agent: str = typer.Option("all", "--agent", "-a", help="Agent target to sync: all, antigravity, claude, cursor, codex"),
+    skip_git: bool = typer.Option(False, "--skip-git", help="Skip pulling latest code from git"),
+    skip_pip: bool = typer.Option(False, "--skip-pip", help="Skip pip package upgrade"),
+    skills_only: bool = typer.Option(False, "--skills-only", help="Only refresh agent skills and rules without modifying package or git"),
+    global_sync: bool = typer.Option(True, "--global/--no-global", help="Also sync global agent skill configurations in user home directory"),
+):
+    """Update SecSkill to the latest version and sync skills across all AI agents."""
+    target_dir = Path(target).resolve()
+    console.print(f"[bold cyan]🔄 Updating SecSkill & Synchronizing Agent Skills...[/bold cyan]")
+
+    with console.status("[bold green]Executing update pipeline...[/bold green]"):
+        results = SecSkillUpdater.run_update(
+            target_dir=target_dir,
+            agent=agent,
+            skip_git=skip_git,
+            skip_pip=skip_pip,
+            skills_only=skills_only,
+            sync_global=global_sync,
+        )
+
+    git_info = results.get("git")
+    pip_info = results.get("pip")
+    synced = results.get("skills_synced", [])
+
+    git_status_str = f"✓ [green]{git_info['message']}[/green]" if git_info and git_info["success"] else (
+        f"[dim]{git_info['message']}[/dim]" if git_info else "[dim]Skipped[/dim]"
+    )
+    pip_status_str = f"✓ [green]{pip_info['message']}[/green]" if pip_info and pip_info["success"] else (
+        f"[yellow]{pip_info['message']}[/yellow]" if pip_info else "[dim]Skipped[/dim]"
+    )
+
+    synced_summary = "\n".join([f"  ✓ [cyan]{f}[/cyan]" for f in synced[:6]])
+    if len(synced) > 6:
+        synced_summary += f"\n  [dim]... and {len(synced) - 6} more files[/dim]"
+    if not synced:
+        synced_summary = "  [dim]No agent skill files updated.[/dim]"
+
+    console.print(Panel(
+        f"[bold green]✓ SecSkill Update Complete![/bold green]\n\n"
+        f"[bold white]Source Control (Git):[/bold white] {git_status_str}\n"
+        f"[bold white]Python Environment:[/bold white] {pip_status_str}\n\n"
+        f"[bold white]Synchronized AI Agent Skills & Rules:[/bold white]\n{synced_summary}\n\n"
+        f"[dim]All AI coding agents (Antigravity, Claude Code, Cursor, Codex) now have the latest SecSkill capabilities.[/dim]",
+        title="SecSkill Self-Update & Agent Sync"
+    ))
+
+@app.command(name="upgrade")
+def upgrade(
+    target: Path = typer.Option(Path("."), "--target", "-t", help="Target project root directory"),
+    agent: str = typer.Option("all", "--agent", "-a", help="Agent target to sync: all, antigravity, claude, cursor, codex"),
+    skip_git: bool = typer.Option(False, "--skip-git", help="Skip pulling latest code from git"),
+    skip_pip: bool = typer.Option(False, "--skip-pip", help="Skip pip package upgrade"),
+    skills_only: bool = typer.Option(False, "--skills-only", help="Only refresh agent skills and rules without modifying package or git"),
+    global_sync: bool = typer.Option(True, "--global/--no-global", help="Also sync global agent skill configurations in user home directory"),
+):
+    """Alias for 'secskill update'."""
+    update(
+        target=target,
+        agent=agent,
+        skip_git=skip_git,
+        skip_pip=skip_pip,
+        skills_only=skills_only,
+        global_sync=global_sync,
+    )
 
 @app.command(name="scan-url")
 def scan_url(
@@ -447,8 +516,10 @@ def graph(
         else:
             print(result)
     else:
-        for f in target_findings:
+        for f in target_findings[:10]:
             AttackPathGraph.render_terminal(f)
+        if len(target_findings) > 10:
+            console.print(f"[dim]Showing 10 of {len(target_findings)} attack paths. Use '--format html --open' to explore the full interactive map.[/dim]\n")
 
 @app.command(name="audit-agent")
 def audit_agent(

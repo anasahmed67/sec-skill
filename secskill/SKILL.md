@@ -193,6 +193,8 @@ When interacting with the developer, support both natural language requests and 
 - `secskill fix --finding <id> --dry-run` -> Show proposed remediation diff without modifying files
 - `secskill duel <file|scenario>` -> Autonomous AI Red Team vs. Blue Team duel arena until code is impenetrable
 - `secskill duel <file> --apply` -> Duel on vulnerable file and automatically apply verified hardened code
+- `secskill graph . --format html --open` -> Generate and view interactive Clickable Visual Attack Map in browser
+- `secskill_attack_map` (MCP Tool) -> Generates interactive visual attack topology map with 1-click remediation drawer
 - `secskill audit-agent .` -> Audit AI Agents, MCP server configs, and Prompt architectures for OWASP LLM / MITRE ATLAS risks
 - `secskill audit-agent . --format html --open` -> Generate interactive Cyberpunk HTML agent audit dashboard
 - `secskill scan --format sarif --output secskill.sarif` -> Export SARIF for GitHub Code Scanning

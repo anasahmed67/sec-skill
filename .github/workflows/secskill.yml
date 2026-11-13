@@ -1,0 +1,35 @@
+name: SecSkill Security Scan
+
+on:
+  pull_request:
+    branches: [main, master]
+  push:
+    branches: [main, master]
+
+jobs:
+  secskill:
+    name: SecSkill SAST & SCA Scan
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install SecSkill
+        run: pip install secskill
+
+      - name: Run SecSkill Scan
+        run: secskill scan . --format sarif --output secskill.sarif
+
+      - name: Upload SARIF to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: secskill.sarif

@@ -108,7 +108,7 @@
 
 <div align="center">
 
-[**Why SecSkill?**](#-why-secskill) · [**Omni-Agent Installation**](#-omni-agent-installation--setup) · [**How to Use This Skill**](#-how-to-use-this-skill-in-your-ai-assistant) · [**Model Context Protocol (MCP)**](#-model-context-protocol-mcp-server) · [**Key Features**](#-key-features) · [**CLI Reference**](#-cli-command-reference) · [**Standards Matrix**](#-international-security-standards-matrix) · [**Python SDK**](#-python-sdk--programmatic-api)
+[**Why SecSkill?**](#-why-secskill) · [**Omni-Agent Installation**](#-omni-agent-installation--setup) · [**One-Command Update**](#-one-command-update--agent-sync) · [**How to Use This Skill**](#-how-to-use-this-skill-in-your-ai-assistant) · [**Model Context Protocol (MCP)**](#-model-context-protocol-mcp-server) · [**Key Features**](#-key-features) · [**CLI Reference**](#-cli-command-reference) · [**Standards Matrix**](#-international-security-standards-matrix) · [**Python SDK**](#-python-sdk--programmatic-api)
 
 </div>
 
@@ -172,6 +172,29 @@ secskill init --agent antigravity  # Configures Google Antigravity (.gemini/skil
 secskill init --agent claude       # Configures Claude Code (.claude/skills, rules.md, CLAUDE.md)
 secskill init --agent cursor       # Configures Cursor (.cursor/rules/secskill.mdc & .cursor/mcp.json)
 secskill init --agent codex        # Configures OpenAI Codex / Windsurf (.mcp/secskill.json & AGENTS.md)
+```
+
+---
+
+### 🔄 One-Command Update & Agent Sync (`secskill update`)
+
+Whenever new security rules, CWE detections, or features are added, users and AI agents **do not need to manually re-download or re-clone the repository**. Simply run:
+
+```bash
+secskill update
+```
+
+#### What `secskill update` does automatically:
+1. **Pulls Latest Code**: Fetches new commits and rules directly from Git (`git pull`).
+2. **Upgrades Environment**: Re-installs or updates the Python package in-place (`pip install -e .` or `pip install --upgrade`).
+3. **Synchronizes AI Agent Skills**: Automatically updates `SKILL.md`, rules, and MCP configurations across **Google Antigravity**, **Claude Code**, **Cursor**, and **Codex** (both project-level and global user directories).
+
+```bash
+# Useful Update Flags:
+secskill update                   # Full update (git pull + pip refresh + all agent skills)
+secskill update --skills-only     # Refresh agent skills & rules without touching git or pip
+secskill update --agent cursor    # Sync only a specific agent target (antigravity, claude, cursor, codex)
+secskill upgrade                  # Convenience alias for secskill update
 ```
 
 ---
@@ -342,7 +365,7 @@ SecSkill implements the **open standard MCP JSON-RPC 2.0 protocol** (`2024-11-05
 ├────────────────────────────────────────────────────────┤
 │ • secskill_scan         • secskill_verify_patch        │
 │ • secskill_scan_url     • secskill_audit_agent         │
-│ • secskill_explain                                     │
+│ • secskill_explain      • secskill_attack_map          │
 └────────────────────────────────────────────────────────┘
 ```
 
@@ -352,6 +375,7 @@ SecSkill implements the **open standard MCP JSON-RPC 2.0 protocol** (`2024-11-05
 3. `secskill_verify_patch`: Safely tests proposed code in a virtual sandbox, comparing baseline findings against patched findings to verify remediation with **zero regressions**.
 4. `secskill_audit_agent`: Audits AI agent prompts, tool definitions, and MCP servers for OWASP LLM vulnerabilities.
 5. `secskill_explain`: Returns deep attack path simulations, technical impact, and international compliance remediation advice for any CWE or OWASP category.
+6. `secskill_attack_map`: Generates an interactive, clickable HTML Visual Attack Map with 1-click remediation drawer and plain-English ELI5 explanations.
 
 ---
 
@@ -429,15 +453,41 @@ secskill watch ./src
 
 ---
 
-### 7. 📊 Visual Attack Path Dataflow Graphing (`secskill graph`)
-Visualizes the exact source-to-sink journey of a vulnerability:
-- Terminal ASCII flow rendering.
-- Markdown / GitHub Mermaid diagrams (`flowchart LR`).
-- Standalone Cyberpunk HTML attack path graph.
+### 7. 🗺️ Clickable Visual Attack Map (Interactive HTML & Dataflow)
+Visualizes the exact source-to-sink journey of vulnerabilities in a lightweight, responsive vector map:
+- **Zero-Dependency Lightweight SVG**: Downsized from heavy JavaScript physics clumps to an ultra-fast, responsive SVG canvas (~84 KB, renders in <10ms).
+- **Visibly Separated 4-Tier Topology**: Clean, spacious horizontal tiers with 110px vertical breathing room:
+  - **Tier 1 (Cyan)**: Untrusted Public Entrypoints (`req.body`, HTTP routes, query params)
+  - **Tier 2 (Purple)**: Application Source Files (`.py`, `.ts`, `.js`, etc.)
+  - **Tier 3 (Severity-Coded Sinks)**: Insecure execution sinks (`subprocess`, SQL queries, eval)
+  - **Tier 4 (Crimson Targets)**: Crown jewel assets (Database, OS Shell, Secrets Vault)
+- **Animated Laser Attack Vectors**: Glowing, pulsating red exploit paths illustrating real hacker jumps from public inputs to critical infrastructure.
+- **Clickable Remediation Inspector**: Clicking any red line or sink opens an instant inspector drawer featuring:
+  - Vulnerability root cause and affected file location
+  - **ELI5 ("Explain Like I'm 5")**: Clear, jargon-free real-world analogy
+  - Complete, pre-tested parameterized remediation code
+  - 1-Click **"Copy Fix"** button
+- **Premium Vector SVG Icons**: Modern, professional vector iconography throughout (no emojis).
+- **Live Search & Dynamic Pan/Zoom**: Smooth mouse-wheel zooming, click-drag panning, and instant client-side keyword search.
 
 ```bash
-secskill graph . --format html --open
-secskill graph . --format mermaid
+secskill graph . --format html --open    # Launches the interactive attack map in browser
+secskill graph . --format mermaid        # Exports GitHub-ready Mermaid diagrams
+secskill graph .                         # Renders colorful terminal ASCII dataflow pipelines
+```
+
+---
+
+### 8. 🔄 One-Command Self-Updater (`secskill update`)
+Automatically keeps SecSkill and all installed AI agent configurations fresh without manual downloads or Git re-cloning:
+- Pulls latest rules, definitions, and code from Git.
+- Refreshes the local Python environment (`pip`).
+- Re-synchronizes `SKILL.md` and MCP server manifests across **Google Antigravity**, **Claude Code**, **Cursor**, and **Codex**.
+
+```bash
+secskill update                   # One command updates everything
+secskill update --skills-only     # Quick-sync AI agent skills only
+secskill upgrade                  # Convenience alias
 ```
 
 ---
@@ -450,6 +500,8 @@ secskill graph . --format mermaid
 | `secskill scan-url <url>` | Audit live website or API for TLS, headers, CORS, cookies | `secskill scan-url https://example.com` |
 | `secskill mcp` | Launch Model Context Protocol server over stdio | `secskill mcp` |
 | `secskill init` | Initialize agent skills, rules, and CI workflows | `secskill init --agent all` |
+| `secskill update` | Pull latest code, refresh pip package, and sync all agent skills | `secskill update` |
+| `secskill upgrade` | Alias for `secskill update` | `secskill upgrade --skills-only` |
 | `secskill explain` | Deep-dive explanation and attack simulation for finding/CWE | `secskill explain --finding CWE-89` |
 | `secskill fix` | Generate or preview remediation diff for finding | `secskill fix --finding F-1001 --dry-run` |
 | `secskill watch [path]` | Real-time secret leak watcher with desktop alerts | `secskill watch ./src` |

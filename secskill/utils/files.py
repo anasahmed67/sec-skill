@@ -42,6 +42,9 @@ def is_secskill_file(path: Path) -> bool:
         ".secskill.yaml",
         "secskill.yml",
         "secskill.log",
+        "report.html",
+        "attack_map.html",
+        "secskill_attack_graph.html",
     }
     if name in known_secskill_files:
         return True
