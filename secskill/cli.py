@@ -410,7 +410,7 @@ def simulate(
 @app.command()
 def graph(
     path: Path = typer.Argument(Path("."), help="Path to codebase directory or file to trace"),
-    format: str = typer.Option("terminal", "--format", "-f", help="Output format: terminal, mermaid, html"),
+    format: str = typer.Option("terminal", "--format", "-f", help="Output format: terminal, mermaid, html, dashboard (Antigravity Generative UI)"),
     finding: Optional[str] = typer.Option(None, "--finding", help="Specific finding ID to graph"),
     output: Optional[Path] = typer.Option(None, "--output", "-o", help="Output file path (e.g. attack_graph.html or graph.mmd)"),
     open_browser: bool = typer.Option(False, "--open", help="Open HTML graph in web browser"),
@@ -445,7 +445,17 @@ def graph(
             )
         ]
 
-    if open_browser or format == "html":
+    if format in ("dashboard", "widget", "antigravity"):
+        from secskill.antigravity_ui import generate_generative_ui_dashboard
+        dash_content = generate_generative_ui_dashboard(target_findings, str(path))
+        if output:
+            out_file = Path(output).resolve()
+            out_file.parent.mkdir(parents=True, exist_ok=True)
+            out_file.write_text(dash_content, encoding="utf-8")
+            console.print(f"[bold green]✓ Antigravity Generative UI Dashboard generated:[/bold green] [cyan]{out_file}[/cyan]")
+        else:
+            print(dash_content)
+    elif open_browser or format == "html":
         html_content = AttackPathGraph.generate_html(target_findings, str(path))
         if output:
             out_file = Path(output).resolve()

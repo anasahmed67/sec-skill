@@ -8,6 +8,11 @@ from typing import Dict, List
 
 from secskill.templates import (
     SKILL_MD_CONTENT,
+    SECSCAN_SKILL_CONTENT,
+    SECPATCH_SKILL_CONTENT,
+    AUDIT_PR_SKILL_CONTENT,
+    SCAN_URL_SKILL_CONTENT,
+    SECDUEL_SKILL_CONTENT,
     CURSOR_MDC_CONTENT,
     CLAUDE_RULES_CONTENT,
     ANTIGRAVITY_PLUGIN_JSON,
@@ -22,11 +27,23 @@ class AgentInstaller:
     @staticmethod
     def install_antigravity(target_dir: Path) -> List[str]:
         created = []
-        skills_dir = target_dir / ".gemini" / "skills" / "secskill"
-        skills_dir.mkdir(parents=True, exist_ok=True)
-        skill_file = skills_dir / "SKILL.md"
-        skill_file.write_text(SKILL_MD_CONTENT, encoding="utf-8")
-        created.append(str(skill_file))
+        antigravity_skills = {
+            "secskill": SKILL_MD_CONTENT,
+            "secscan": SECSCAN_SKILL_CONTENT,
+            "secpatch": SECPATCH_SKILL_CONTENT,
+            "audit-pr": AUDIT_PR_SKILL_CONTENT,
+            "scan-url": SCAN_URL_SKILL_CONTENT,
+            "secduel": SECDUEL_SKILL_CONTENT,
+        }
+
+        # Install both into .gemini/skills and standard Antigravity .agents/skills
+        for base_folder in [target_dir / ".gemini" / "skills", target_dir / ".agents" / "skills"]:
+            for skill_name, skill_content in antigravity_skills.items():
+                sdir = base_folder / skill_name
+                sdir.mkdir(parents=True, exist_ok=True)
+                skill_file = sdir / "SKILL.md"
+                skill_file.write_text(skill_content, encoding="utf-8")
+                created.append(str(skill_file))
 
         plugins_dir = target_dir / ".gemini" / "plugins" / "secskill"
         plugins_dir.mkdir(parents=True, exist_ok=True)

@@ -10,7 +10,17 @@ import subprocess
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 
-from secskill.installer import AgentInstaller, SKILL_MD_CONTENT
+from secskill.installer import (
+    AgentInstaller,
+    SKILL_MD_CONTENT,
+)
+from secskill.templates import (
+    SECSCAN_SKILL_CONTENT,
+    SECPATCH_SKILL_CONTENT,
+    AUDIT_PR_SKILL_CONTENT,
+    SCAN_URL_SKILL_CONTENT,
+    SECDUEL_SKILL_CONTENT,
+)
 
 class SecSkillUpdater:
     """Handles automated repository pulls, pip upgrades, and AI agent skill sync."""
@@ -137,17 +147,29 @@ class SecSkillUpdater:
         if sync_global:
             home = Path.home()
             # Antigravity global skills
-            global_gemini_skills = home / ".gemini" / "skills" / "secskill"
-            global_gemini_config = home / ".gemini" / "config" / "skills" / "secskill"
-            for gdir in [global_gemini_skills, global_gemini_config]:
-                if gdir.parent.is_dir():
-                    try:
-                        gdir.mkdir(parents=True, exist_ok=True)
-                        skill_f = gdir / "SKILL.md"
-                        skill_f.write_text(SKILL_MD_CONTENT, encoding="utf-8")
-                        updated_files.append(str(skill_f))
-                    except Exception:
-                        pass
+            antigravity_skills = {
+                "secskill": SKILL_MD_CONTENT,
+                "secscan": SECSCAN_SKILL_CONTENT,
+                "secpatch": SECPATCH_SKILL_CONTENT,
+                "audit-pr": AUDIT_PR_SKILL_CONTENT,
+                "scan-url": SCAN_URL_SKILL_CONTENT,
+                "secduel": SECDUEL_SKILL_CONTENT,
+            }
+            global_roots = [
+                home / ".gemini" / "skills",
+                home / ".gemini" / "config" / "skills",
+            ]
+            for root in global_roots:
+                if root.parent.is_dir():
+                    for skill_name, content in antigravity_skills.items():
+                        gdir = root / skill_name
+                        try:
+                            gdir.mkdir(parents=True, exist_ok=True)
+                            skill_f = gdir / "SKILL.md"
+                            skill_f.write_text(content, encoding="utf-8")
+                            updated_files.append(str(skill_f))
+                        except Exception:
+                            pass
 
             # Claude global skills
             global_claude_skills = home / ".claude" / "skills" / "secskill"

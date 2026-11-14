@@ -165,6 +165,30 @@ TOOLS = [
                 }
             }
         }
+    },
+    {
+        "name": "secskill_duel",
+        "description": "Run an autonomous Red Team vs. Blue Team security duel arena on a target file, code snippet, or scenario (sqli, cmdi, xss, path-traversal) until code is hardened.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "target": {
+                    "type": "string",
+                    "description": "Target file path or scenario name: 'sqli', 'cmdi', 'xss', 'path-traversal'."
+                },
+                "rounds": {
+                    "type": "integer",
+                    "description": "Maximum duel engagement rounds.",
+                    "default": 4
+                },
+                "apply": {
+                    "type": "boolean",
+                    "description": "Automatically overwrite target file with hardened code if Blue Team wins.",
+                    "default": False
+                }
+            },
+            "required": ["target"]
+        }
     }
 ]
 
@@ -352,6 +376,10 @@ class SecSkillMCPServer:
             out_path.parent.mkdir(parents=True, exist_ok=True)
             out_path.write_text(html_content, encoding="utf-8")
 
+            from secskill.antigravity_ui import generate_mermaid_attack_map, generate_generative_ui_dashboard
+            mermaid_code = generate_mermaid_attack_map(filtered)
+            dashboard_html = generate_generative_ui_dashboard(filtered, target)
+
             return {
                 "status": "success",
                 "output_file": str(out_path),
@@ -360,7 +388,33 @@ class SecSkillMCPServer:
                 "critical_count": sum(1 for f in filtered if f.severity.value == "CRITICAL"),
                 "high_count": sum(1 for f in filtered if f.severity.value == "HIGH"),
                 "medium_count": sum(1 for f in filtered if f.severity.value == "MEDIUM"),
-                "instructions": f"Visual Attack Map generated successfully. Open '{out_path.name}' in your browser to view the interactive map."
+                "mermaid_diagram": mermaid_code,
+                "dashboard_html": dashboard_html,
+                "instructions": f"Visual Attack Map generated. Use 'mermaid_diagram' to render native Mermaid in chat, or embed 'dashboard_html' as an Antigravity Generative UI artifact."
+            }
+
+        elif name == "secskill_duel":
+            from secskill.duel.arena import DuelArena
+            target = args.get("target", "sqli")
+            rounds = int(args.get("rounds", 4))
+            apply_fix = bool(args.get("apply", False))
+            arena = DuelArena(
+                target=target,
+                provider="simulate",
+                max_rounds=rounds,
+                auto_apply=apply_fix,
+                turn_delay=0.0,
+            )
+            res = arena.run()
+            return {
+                "winner": res.winner,
+                "is_hardened": res.is_hardened,
+                "target": res.target_name,
+                "vulnerability_type": res.vulnerability_type,
+                "total_rounds": res.total_rounds,
+                "initial_code": res.initial_code,
+                "final_code": res.final_code,
+                "summary": f"Autonomous Red vs Blue duel finished in {res.total_rounds} rounds. Winner: {res.winner}. Code hardened: {res.is_hardened}."
             }
 
         raise ValueError(f"Unknown tool '{name}'")
